@@ -1,0 +1,14 @@
+[package]
+name = "descreg"
+version = "0.0.1"
+edition = "2021"
+description = "Prototype: crypto-agility descriptor registry + disjoint-quorum checker (no_std)"
+
+[features]
+default = []
+diff-c = []        # link the C quorum checker (../c/fs_quorum.c) for differential tests
+
+[dependencies]
+
+[dev-dependencies]
+proptest = "1"

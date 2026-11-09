@@ -1,0 +1,28 @@
+# Evidence register
+
+**Level:** L2. Classes: **Established** (published, standard or textbook result), **Derived** (proved or machine-checked here from stated assumptions), **Proposed** (design choice), **Hypothesis** (testable, untested), **Speculative** (no evidence yet), **Refuted** (shown false). "Check" is a command in `scripts/run_all_checks.sh` or `models/`.
+
+| CLM | Claim | Class | Basis / source | Check | Limits |
+|---|---|---|---|---|---|
+| CLM-01 | Safe-and-live policies form exactly the interval [Lo, U]; non-empty iff no compromise set and loss set cover all atoms (mixed Q²). | Derived | Proof in mathematical-foundations §3.3; related to Hirt–Maurer general adversary structures | `models/interval.py` (1,050 random structures) | Within the declared fault model only |
+| CLM-02 | With k independent classes, a safe-and-live policy against t compromised and s lost classes exists iff k ≥ t+s+1. | Derived | §3.4 | `models/interval.py` | Independence of classes is assumed |
+| CLM-03 | Every recovery path is an attack path (t_eff + s_max ≤ k−1). | Derived | §3.5 | `models/lint.py` | |
+| CLM-04 | Eight listed configurations are impossible. | Derived | §3.6 | `models/lint.py` (all IMPOSSIBLE) | Under reference layout |
+| CLM-05 | Absent atoms must count as compromised and lost. | Derived | R2 red-team, F-R2-01 | `tests/redteam_r2/r2_absent.py`, `lint.py` | |
+| CLM-06 | C admission matches the Python reference. | Derived | 3,000 random cases, 0 mismatches | `models/p8check.py` | Random cases are not exhaustive; 216 admitted |
+| CLM-07 | Admission code size: 682 B (Rev 4), 812 B hardened, 902 B with projection (M0+ -Os). | Derived (measured) | `arm-none-eabi-size` | Step [7] of run_all_checks | Stack not re-measured; compiler version-dependent |
+| CLM-08 | Governance-loss probability over 40 years: 39% (Rev 2 rule), 9.9% (single-family degraded), 1.0% (terrestrial presence design). | Derived from illustrative inputs | `models/brick_mc.py` | `python3 models/brick_mc.py` | **Hazard rates are illustrative, not measured.** Relative ordering is the claim, not the absolute values. |
+| CLM-09 | Presence restores safety and liveness under a family loss. | Derived | Theorem 2 | lint | Presence must be independent of ownership (F-R2-04) |
+| CLM-10 | Publicity is exposure not prevention. | Proposed | Modelling choice D-26 | — | |
+| CLM-11 | Dual hash families are independent enough to count as two classes. | Hypothesis | EXP-18 | not run | Shared assumptions (e.g. SHA-2/Keccak both rely on sponge/compression collision resistance heuristics) are contested |
+| CLM-12 | Admission takes ≈3–10 ms at 64 MHz on M0+. | Hypothesis | Loop-count estimate | none | No silicon measurement exists (EXP-19) |
+| CLM-13 | Locked first stage with safe torn reads exists on common industrial MCUs. | Hypothesis | E-A1 | not run | Risk R-4 |
+| CLM-14 | NIST IR 8547 final (2026-10-27) retires dates used as label-retirement dates. | Established (literature) | Web verification in earlier session | — | Re-verify before citing |
+| CLM-15 | The earlier claim that the dual rule was single-fault tolerant. | **Refuted** | Analytic error, withdrawn | lint | Kept for history |
+| CLM-16 | Combining interval admission, presence, publicity and class lifecycle is novel. | Hypothesis | Literature survey only | — | No patent search; novelty not established |
+| CLM-17 | The kernel generalises to a broader "paradigm" of reconfigurable architectures. | Speculative | None | — | No evidence |
+| CLM-18 | Governance-loss risk is dominated by custody loss. | Hypothesis | Inputs to CLM-08 | `brick_mc.py` | Follows from assumed hazards |
+| CLM-19 | `ac_key_install_authorised` refuses a key install into an ACTIVE slot that lacks that slot's own holder atom in the evidence set (REQ-LIFE-02). | Derived (machine-checked) | F-R2-03, ADR-015 | `tests/redteam_r2/fixcheck.c` cases I/J/K (0 failures) | Covers the C admission primitive only; not yet a device-level end-to-end test |
+| CLM-20 | `Repl3OK` in the FirstStage TLA+ model requires slot 3's own holder signature whenever slot 3 is active (REQ-LIFE-02 modelled). | Derived | ADR-015 | `simulations/tla/FirstStage.tla`, TLC run under `cfg_base` | TLC run of the full base model was still in progress at the time of writing; GATE-08 was not passed before this change either, so this does not newly establish model-level completeness |
+| CLM-21 | Declaring `OWN` as the site controller (F-R2-04 correlated presence) makes OPERATE's claimed 1-safe/1-loss-live interval empty — no admissible table is both safe and live under that assumption. | Derived | R2 red-team F-R2-04, REQ-LINT-03 | `models/lint.py` (`site_controller="group:OWN"` row, `nonempty=False`) | Reference 8-atom layout only; other groups/profiles not swept |
+| CLM-22 | SIM-01's governance-loss ordering (terrestrial ≤ remote_degraded ≤ {remote, rev2_renewal, rev2_no_renewal}) is stable under a sweep of the illustrative hazard rates. | Derived (machine-checked, GATE-12) | HYP-01 rejection condition | `simulations/hazard_sweep.py`: 0/16 points (`h_group` 1–10%/yr × `h_family` 0.1–3%/yr) violate the ordering | Hazards are illustrative, not measured; only the swept range was tested, and only the ordering, not the absolute probabilities (CLM-08 still applies) |

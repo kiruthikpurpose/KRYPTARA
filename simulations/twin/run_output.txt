@@ -1,0 +1,28 @@
+runs per strategy: 300; devices ~2400; horizon 365 d
+
+FAULTY UPDATE (16% of devices carry the bad revision; 30% latent) -- blast radius = devices left out of service
+strategy                              mean%   p95%   max% siteOut transient% P(halt) halt day
+A big-bang (all sites, no halt)        2.32   3.34   3.96    0.01      13.12    0.00      nan
+B staged waves, no halt                2.31   3.30   3.91    0.03      13.14    0.00      nan
+C staged + auto-halt                   0.15   0.41   0.73    0.00       0.85    1.00     31.8
+D staged + halt + 5% persisters        0.13   0.37   0.64    0.00       0.79    1.00     31.5
+E D + activation lease 45d             0.13   0.37   0.64    0.00       0.79    1.00     31.5
+F E + stratified canary                0.15   0.33   0.54    0.00       0.85    1.00     25.9
+
+GOOD UPDATE (no fault) -- cost of caution: share migrated by horizon and exposure (unmigrated device-years per device, 1 yr)
+strategy                             migrated%  exposure false halt
+A big-bang (all sites, no halt)           95.0     0.131       0.00
+B staged waves, no halt                   95.0     0.264       0.00
+C staged + auto-halt                      95.0     0.264       0.00
+D staged + halt + 5% persisters           94.5     0.272       0.00
+E D + activation lease 45d                94.5     0.272       0.00
+F E + stratified canary                   94.5     0.272       0.00
+
+STRESS: site-homogeneous fault (bad hw in 100% of devices at bad sites), rollback 50%, report delay 10 d, 70% latent
+strategy                              mean%   p95% siteTotalLoss P(halt)
+A big-bang (all sites, no halt)       10.58  14.93          0.00    0.00
+B staged waves, no halt               10.58  14.82          0.00    0.00
+C staged + auto-halt                   1.47   4.18          0.00    1.00
+D staged + halt + 5% persisters        1.35   3.86          0.00    1.00
+E D + activation lease 45d             1.35   3.85          0.00    1.00
+F E + stratified canary                1.14   2.97          0.00    1.00

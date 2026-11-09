@@ -1,0 +1,193 @@
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38361 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 118 and seed -5482123152143372549 with 4 workers on 2 cores with 5461MB heap and 64MB offheap memory [pid: 2999] (Linux 6.18.44-fc-v242 amd64, Ubuntu 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/claude/atlas2/blueprint/code/V/FirstStage.tla
+Parsing file /tmp/Integers.tla
+Parsing file /tmp/FiniteSets.tla
+Parsing file /tmp/TLC.tla
+Parsing file /tmp/Naturals.tla
+Parsing file /tmp/Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module FirstStage
+Starting... (2026-11-06 10:49:13)
+Computing initial states...
+Computed 2 initial states...
+Computed 4 initial states...
+Computed 8 initial states...
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-06 10:49:13.
+Progress(4) at 2026-11-06 10:49:16: 141,621 states generated (141,621 s/min), 44,842 distinct states found (44,842 ds/min), 36,984 states left on queue.
+Error: Invariant Inv_NoAnergyLockout is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 2
+/\ nreq = 0
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 2: <HonestDeposit line 157, col 3 to line 160, col 117 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "ADV",
+  sg |-> <<0, 0, 0>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> TRUE,
+  pr |-> FALSE,
+  hn |-> TRUE,
+  tf |-> 0 ]
+/\ fk = 2
+/\ nreq = 1
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 3: <RejectReq line 213, col 3 to line 219, col 105 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<1, 1, 1>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 2
+/\ nreq = 1
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 4: <HonestDeposit line 157, col 3 to line 160, col 117 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<1, 1, 1>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "ADV",
+  sg |-> <<0, 0, 0>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> TRUE,
+  pr |-> TRUE,
+  hn |-> TRUE,
+  tf |-> 0 ]
+/\ fk = 2
+/\ nreq = 2
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 5: <RejectReq line 213, col 3 to line 219, col 105 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<2, 2, 2>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 2
+/\ nreq = 2
+/\ run = 0
+/\ anergic = {1, 2, 3}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+464686 states generated, 191590 distinct states found, 163838 states left on queue.
+The depth of the complete state graph search is 5.
+The average outdegree of the complete state graph is 0 (minimum is 0, the maximum 31 and the 95th percentile is 1).
+Finished in 06s at (2026-11-06 10:49:19)
