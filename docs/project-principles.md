@@ -41,7 +41,7 @@
 
 | Objective | Target | Status |
 |---|---|---|
-| O1 Locked-stage footprint | ≤ 8 KiB code for kernel + admission + hash waist(s) + LMS verify on Cortex-M0+; ≤ 4 KiB RAM | Core 3,962 B [M, not executed]; admission 682 B (Rev 4; now 902 B hardened, see CHANGELOG) [M]; total ≈ 6–8 KiB [E] |
+| O1 Locked-stage footprint | ≤ 8 KiB code for kernel + admission + hash waist(s) + LMS verify on Cortex-M0+; ≤ 4 KiB RAM | Core 3,962 B [M, not executed]; admission 682 B (Rev 4; 902 B hardened as of the R2 fixes, **stale as of 2026-11-09** pending re-measurement in CI, see CLM-07) [M]; total ≈ 6–8 KiB [E] |
 | O2 Admission cost | Bounds and admission ≤ 10 ms at 64 MHz on M0+ | ≈ 3–10 ms [E from loop counts]; to be measured (EXP-19) |
 | O3 Single-fault safety, all tiers except HALT | 100% of declared single faults rejected | Proven per table by lint [M] |
 | O4 Governance survivability | P(permanent governance loss in 40 yr) ≤ 2% under the reference hazard model | 1.0% [M, illustrative hazards] |

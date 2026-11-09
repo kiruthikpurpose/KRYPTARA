@@ -31,6 +31,22 @@ REQ_RE = re.compile(r"^\|\s*(REQ-[A-Za-z0-9-]+)\s*\|\s*(.*?)\s*\|", re.M)
 # ownership transfer protocol, provisioning, governance institutions, certification process).
 # This mapping is itself a judgment call, documented so a reviewer can disagree with a specific line
 # rather than with an opaque score.
+# Human-verified overrides: a person (not the keyword matcher) read the legacy text and the current
+# repo and confirmed a real correspondence. Keep this list short and give a real reason each time --
+# it exists to be more trustworthy than the keyword score, not to pad the "covered" count.
+MANUAL_VERIFIED_COVERED = {
+    "FR-ASR-05": "tests/bench_policy8.c and CLM-23/evidence-register.md publish host timing with "
+                 "an explicit evidence label, parameter set (nf=3 and nf=12, k<=2, -O2) and "
+                 "toolchain (gcc, clock_gettime); verified by reading both, not by keyword overlap.",
+    "FR-ASR-10": "tests/fuzz_policy8.c: 200,000 random-input iterations over every hardened "
+                 "admission-API entry point (ac_tbl_upper/lower, ac_labels_valid, "
+                 "ac_faults_from_labels, ac_key_install_authorised, ac_no_duplicate_keys), also run "
+                 "under ASan+UBSan in run_all_checks.sh step [16b]. Partial: this is a seeded "
+                 "random-input harness, not coverage-guided fuzzing (no AFL/libFuzzer); "
+                 "'continuously' means 'every run_all_checks.sh invocation', not a standing fuzzing "
+                 "campaign between releases.",
+}
+
 OUT_OF_SCOPE_PREFIXES = {
     "FR-UPD": "OTA update mechanics (staging, rollout) -- Phase 2 fleet feature, not the kernel",
     "FR-MIG": "cross-algorithm migration ceremonies -- Phase 2/4, not the kernel",
@@ -57,6 +73,9 @@ def main():
 
     buckets = collections.defaultdict(list)
     for rid, text, verif, prio, ms in legacy_rows:
+        if rid in MANUAL_VERIFIED_COVERED:
+            buckets["MANUAL-VERIFIED-COVERED"].append((rid, text, prio, ms, MANUAL_VERIFIED_COVERED[rid], None))
+            continue
         prefix3 = "-".join(rid.split("-")[:2])
         if prefix3 in OUT_OF_SCOPE_PREFIXES:
             buckets["OUT-OF-SCOPE-BY-PREFIX"].append((rid, text, prio, ms, OUT_OF_SCOPE_PREFIXES[prefix3], None))
@@ -84,11 +103,17 @@ def main():
                 "know about). Re-run after any change to either source file.\n\n")
         total = len(legacy_rows)
         f.write(f"**Totals:** {total} legacy requirements -- "
-                f"{len(buckets['LIKELY-COVERED'])} likely covered, "
+                f"{len(buckets['MANUAL-VERIFIED-COVERED'])} manually verified covered, "
+                f"{len(buckets['LIKELY-COVERED'])} likely covered (keyword match, unverified), "
                 f"{len(buckets['OUT-OF-SCOPE-BY-PREFIX'])} out of scope by area, "
                 f"{len(buckets['GAP-CANDIDATE'])} gap candidates needing triage.\n\n")
 
-        f.write("## Likely covered (keyword overlap >= 3 with a current REQ-)\n\n")
+        f.write("## Manually verified covered (a person confirmed the match, not just keyword overlap)\n\n")
+        f.write("| Legacy ID | Priority | Milestone | Why | Legacy text |\n|---|---|---|---|---|\n")
+        for rid, text, prio, ms, reason, _ in sorted(buckets["MANUAL-VERIFIED-COVERED"]):
+            f.write(f"| {rid} | {prio} | {ms} | {reason} | {text[:140]}{'...' if len(text) > 140 else ''} |\n")
+
+        f.write("\n## Likely covered (keyword overlap >= 3 with a current REQ-)\n\n")
         f.write("| Legacy ID | Priority | Milestone | Best REQ- match | Overlap score | Legacy text |\n|---|---|---|---|---|---|\n")
         for rid, text, prio, ms, match, score in sorted(buckets["LIKELY-COVERED"]):
             f.write(f"| {rid} | {prio} | {ms} | {match} | {score} | {text[:140]}{'...' if len(text) > 140 else ''} |\n")
@@ -105,6 +130,7 @@ def main():
 
     print(f"Wrote {OUT}")
     print(f"Totals: {total} legacy FR-/NFR- rows -> "
+          f"{len(buckets['MANUAL-VERIFIED-COVERED'])} manually-verified, "
           f"{len(buckets['LIKELY-COVERED'])} likely-covered, "
           f"{len(buckets['OUT-OF-SCOPE-BY-PREFIX'])} out-of-scope, "
           f"{len(buckets['GAP-CANDIDATE'])} gap-candidates")

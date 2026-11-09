@@ -2,7 +2,14 @@
 
 **Machine-generated** by `scripts/reconcile_legacy_requirements.py` -- a mechanical keyword-overlap first pass over all 221 `FR-`/`NFR-` rows in `research-archive/streams/R_requirements.md` against the 23 current `REQ-` rows in `docs/specifications/requirements.md`. This classifies, it does not verify: a LIKELY-COVERED match is a keyword-overlap score, not a confirmed semantic match, and every GAP-CANDIDATE still needs a human decision (new REQ-/ADR, explicit waiver, or recognise it as already out of scope for a reason this script's prefix table doesn't know about). Re-run after any change to either source file.
 
-**Totals:** 221 legacy requirements -- 11 likely covered, 62 out of scope by area, 148 gap candidates needing triage.
+**Totals:** 221 legacy requirements -- 2 manually verified covered, 11 likely covered (keyword match, unverified), 62 out of scope by area, 146 gap candidates needing triage.
+
+## Manually verified covered (a person confirmed the match, not just keyword overlap)
+
+| Legacy ID | Priority | Milestone | Why | Legacy text |
+|---|---|---|---|---|
+| FR-ASR-05 | MUST | M1 | tests/bench_policy8.c and CLM-23/evidence-register.md publish host timing with an explicit evidence label, parameter set (nf=3 and nf=12, k<=2, -O2) and toolchain (gcc, clock_gettime); verified by reading both, not by keyword overlap. | Benchmarks SHALL be published with evidence labels, parameter sets and toolchains. |
+| FR-ASR-10 | MUST | M1 | tests/fuzz_policy8.c: 200,000 random-input iterations over every hardened admission-API entry point (ac_tbl_upper/lower, ac_labels_valid, ac_faults_from_labels, ac_key_install_authorised, ac_no_duplicate_keys), also run under ASan+UBSan in run_all_checks.sh step [16b]. Partial: this is a seeded random-input harness, not coverage-guided fuzzing (no AFL/libFuzzer); 'continuously' means 'every run_all_checks.sh invocation', not a standing fuzzing campaign between releases. | All parsers SHALL be bounded and continuously fuzzed. |
 
 ## Likely covered (keyword overlap >= 3 with a current REQ-)
 
@@ -95,11 +102,9 @@
 | FR-ASR-02 | MUST | M4 | 0 | A neutral conformance suite SHALL test first stages, vouchers, debug credentials and bundles. |
 | FR-ASR-03 | MUST | M1 | 0 | A power-loss harness SHALL run at least 100,000 randomised boots/transitions per release. |
 | FR-ASR-04 | SHOULD | M4 | 1 | The project SHALL expose fault-injection and side-channel evaluation hooks so independent labs can run campaigns; the project itself SHALL NOT publish attack pr... |
-| FR-ASR-05 | MUST | M1 | 2 | Benchmarks SHALL be published with evidence labels, parameter sets and toolchains. |
 | FR-ASR-07 | MUST | M4 | 1 | Independent third-party review SHALL precede declaring the first stage stable. |
 | FR-ASR-08 | SHOULD | M4 | 1 | The project SHALL supply safety-case artefacts demonstrating crypto confinement (separation, timing envelope, failure modes) reusable by assessors. |
 | FR-ASR-09 | MUST | M2 | 2 | WCET analysis SHALL accompany each device-side primitive on supported targets. |
-| FR-ASR-10 | MUST | M1 | 0 | All parsers SHALL be bounded and continuously fuzzed. |
 | FR-ASR-11 | MUST | M1 | 1 | Supply-chain controls (dependency pinning, toolchain provenance, signed releases) SHALL be implemented. |
 | FR-AUT-01 | MUST | M0 | 1 | The policy model SHALL represent every state-changing authority action (floor advance, slot replace, lifecycle transition, ownership transfer, revocation, debug... |
 | FR-AUT-02 | MUST | M0 | 1 | The library SHALL ship a signed, versioned, machine-readable assumption table A(k) mapping every algorithm, parameter set, implementation and holding organisati... |

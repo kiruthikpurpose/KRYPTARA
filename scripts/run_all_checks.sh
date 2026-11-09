@@ -21,4 +21,11 @@ echo "== [13] REQ-HALT-01 property test (models/halt_budget.py)"; (cd models && 
 echo "== [14] REQ-CHAIN-01 hash-chain reference check (models/hash_chain.py)"; (cd models && python3 hash_chain.py | tail -3)
 echo "== [15] legacy requirements reconciliation regenerates cleanly (scripts/reconcile_legacy_requirements.py)"
 python3 scripts/reconcile_legacy_requirements.py
+echo "== [16] FR-ASR-10 fuzz harness, 200,000 random-input iterations (tests/fuzz_policy8.c)"
+gcc -O2 -o "$BUILD/fuzz_policy8" tests/fuzz_policy8.c && "$BUILD/fuzz_policy8"
+if gcc -fsanitize=address,undefined -x c -c -o /dev/null tests/fuzz_policy8.c 2>/dev/null; then
+  echo "== [16b] same harness under ASan+UBSan"
+  gcc -O1 -fsanitize=address,undefined -o "$BUILD/fuzz_policy8_asan" tests/fuzz_policy8.c && "$BUILD/fuzz_policy8_asan"
+fi
+echo "== [17] REQ-LIFE-01 DECLARE_CLASS_DEAD check (models/class_lifecycle.py)"; (cd models && python3 class_lifecycle.py | tail -3)
 echo "ALL CHECKS COMPLETED"

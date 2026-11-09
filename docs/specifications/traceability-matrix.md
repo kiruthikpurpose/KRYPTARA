@@ -9,7 +9,7 @@ Chain: source evidence → principle → claim → decision → requirement → 
 | R2 red-team | CLM-05 | ADR-014 | REQ-ADM-03 | admission | `ac_tbl_upper/lower` (`expo`, `absent`) | `r2_absent.py`, `fixcheck.c` | Passed (GATE-05, 06) |
 | R2 red-team | — | ADR-014 | REQ-ADM-04 | admission | hardened API | `fixcheck.c` | Passed |
 | R2 red-team | — | ADR-014 | REQ-ADM-05 | admission | `ac_tbl_project` | `tests/test_projection.c` | Passed (GATE-04) |
-| Rev 4 §3.4 | CLM-02 | ADR-011 | REQ-LIFE-01 | lifecycle | `models/lint.py` | `lint.py` | Partial |
+| Rev 4 §3.4 | CLM-02, CLM-34 | ADR-011 | REQ-LIFE-01 | lifecycle | `models/interval.py` (class-count law); `models/class_lifecycle.py` (DECLARE_CLASS_DEAD) | `interval.py` [3] (0 disagreements); `class_lifecycle.py` (6/6) | Passed, both halves |
 | Rev 4 §3.5–3.6 | CLM-03, 04 | ADR-004 | REQ-TIER-01 | tiers | `models/lint.py` | `lint.py` | Passed (GATE-02) |
 | Rev 4 §3.5–3.6 | — | ADR-004 | REQ-TIER-02 | tiers | `models/tiers_extra.py` | `tiers_extra.py` | Passed (0 failures, both profiles) |
 | Rev 4 §6.4 | CLM-09 | ADR-005 | REQ-PRES-01 | locked stage | — | — | Not implemented (hardware-only; no MCU available) |
