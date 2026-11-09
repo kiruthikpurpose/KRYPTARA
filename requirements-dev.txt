@@ -1,0 +1,8 @@
+# Optional extras for checks that degrade gracefully (skip, not fail) without them:
+# z3-solver: models/z3_mechanised.py (SMT-mechanised instance verification, item 5 of the
+#            50-things roadmap -- a roundabout for a full Lean/Coq proof, which needs a
+#            multi-GB toolchain not installed anywhere in this project).
+# cbor2:     models/wire_format.py differential check against an independent CBOR encoder.
+-r requirements.txt
+z3-solver
+cbor2

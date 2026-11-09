@@ -3,6 +3,10 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"; BUILD="$ROOT/build"; mkdir -p "$BUILD"
 echo "== [1] interval theorem + class-count law (models/interval.py)";      (cd models && python3 interval.py)
+echo "== [1b] exhaustive (not random) check, n=3,4, all monotone functions x all k<=2 fault structures (models/exhaustive_small.py)"
+(cd models && python3 exhaustive_small.py)
+echo "== [1c] Z3-mechanised instance verification of U/Lo maximality/minimality (models/z3_mechanised.py)"
+(cd models && python3 z3_mechanised.py)   # skips cleanly (exit 0) if z3-solver isn't installed in this interpreter
 echo "== [2] tier tables, budgets, impossibility catalogue (models/lint.py)"; (cd models && python3 lint.py && python3 tiers_extra.py)
 echo "== [3] C admission vs Python reference";
 gcc -O2 -Wall -o "$BUILD/p8test" src/p8test.c; cp "$BUILD/p8test" models/p8test; (cd models && python3 p8check.py); rm -f models/p8test
@@ -28,4 +32,14 @@ if gcc -fsanitize=address,undefined -x c -c -o /dev/null tests/fuzz_policy8.c 2>
   gcc -O1 -fsanitize=address,undefined -o "$BUILD/fuzz_policy8_asan" tests/fuzz_policy8.c && "$BUILD/fuzz_policy8_asan"
 fi
 echo "== [17] REQ-LIFE-01 DECLARE_CLASS_DEAD check (models/class_lifecycle.py)"; (cd models && python3 class_lifecycle.py | tail -3)
+echo "== [18] wire-format two-encoder differential check (models/wire_format.py)"; (cd models && python3 wire_format.py)
+echo "== [19] correlated-failure (common-cause) extension of the theory (models/common_cause.py)"; (cd models && python3 common_cause.py)
+echo "== [20] mutation testing of policy8.c against the full test suite (scripts/mutation_test.py)"
+python3 scripts/mutation_test.py
+echo "== [21] Theorem 3 machine cross-check (models/theorem3_check.py)"; (cd models && python3 theorem3_check.py | tail -3)
+echo "== [22] reproducible build check (scripts/reproducible_build.sh)"; bash scripts/reproducible_build.sh
+echo "== [23] second application domain: CA root governance (models/second_domain_ca_root.py)"; (cd models && python3 second_domain_ca_root.py)
+echo "== [24] static stack analysis, host x86-64 (scripts/stack_analysis.sh)"; bash scripts/stack_analysis.sh
+echo "== [25] crypto provider conformance suite: our sha256.c vs OpenSSL vs Python hashlib (scripts/provider_conformance.sh)"
+bash scripts/provider_conformance.sh
 echo "ALL CHECKS COMPLETED"

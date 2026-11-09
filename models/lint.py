@@ -8,14 +8,21 @@ class Atom:
     def __init__(s, name, kind, labels): s.name, s.kind, s.labels = name, kind, set(labels)
 
 def structures(atoms, present, t, s, comp_labels=None, loss_labels=None, exclude_loss=(),
-               loss_kinds=("SIG",), exclude_comp_combo=(), exclude_loss_combo=(), site_controller=None):
+               loss_kinds=("SIG",), exclude_comp_combo=(), exclude_loss_combo=(), site_controller=None,
+               common_cause_groups=()):
     """Return (Ac, Al) for t simultaneous compromise faults and s simultaneous loss faults.
     - each SIG/PRES atom is a singleton fault; each label value is a fault (all atoms carrying it)
     - exposure atoms (kind WIT) are free to the attacker: added to every compromise set
     - absent atoms are permanently lost: added to every loss set
     - site_controller (REQ-LINT-03): name of a custody group label (e.g. "group:OWN") declared to run
       the site. F-R2-04: compromising that group's atoms is modelled as also yielding PRES (correlated
-      presence), since a site-controller insider needs no separate presence fault."""
+      presence), since a site-controller insider needs no separate presence fault.
+    - common_cause_groups (item 7, 50-things list): an iterable of atom-name sets that share a
+      declared common cause (same HSM vendor, same ceremony tool, same verifier implementation --
+      an analogy to IEC 61508-6's beta-factor, used as an analogy only, not an imported standard
+      clause). Each group is added to Ac as its own SINGLE compromise set regardless of t: a shared-
+      cause event is one fault that happens to hit every atom in the group at once, which is exactly
+      what makes common-cause faults dangerous -- they bypass the "t independent faults" budget."""
     idx = {a.name: i for i, a in enumerate(atoms)}
     absent = 0
     for i, a in enumerate(atoms):
@@ -47,6 +54,10 @@ def structures(atoms, present, t, s, comp_labels=None, loss_labels=None, exclude
         return x | pres_bit if (ctrl_bit and (x & ctrl_bit)) else x
     Ac = sorted({with_corr(u([Fc[k] for k in c]) | free) for c in itertools.combinations(Fc, t)
                  if ok(c, c, exclude_comp_combo)}) if t else [with_corr(free)]
+    for group in common_cause_groups:
+        mask = sum(1 << idx[name] for name in group if name in idx and atoms[idx[name]].name in present)
+        if mask:
+            Ac = sorted(set(Ac) | {with_corr(mask | free)})
     Al = sorted({u([Fl[k] for k in c]) | absent for c in itertools.combinations(Fl, s)
                  if ok(c, c, exclude_loss_combo)}) if s else [absent]
     return Ac, Al, Fc, Fl
