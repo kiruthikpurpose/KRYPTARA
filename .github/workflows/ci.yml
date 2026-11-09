@@ -1,0 +1,32 @@
+name: checks
+# Reproduces every computed claim that run_all_checks.sh covers, on every push and PR.
+# Runs on GitHub's runner (2-core, 7GB RAM, ~14GB free disk) rather than any contributor's machine,
+# so this is also where the ARM cross-compile size check (step [7], skipped locally when the
+# toolchain isn't installed) actually runs. Nothing here needs more than a few minutes.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM cross-compiler (for step [7], host-only elsewhere)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-arm-none-eabi
+
+      - name: Install Python deps
+        run: pip install --quiet -r requirements.txt
+
+      - name: Run full check suite
+        run: bash scripts/run_all_checks.sh
+
+      - name: Doc audit
+        run: python3 scripts/audit_docs.py

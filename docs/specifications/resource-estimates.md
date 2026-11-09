@@ -17,7 +17,7 @@
 | Worst-path stack | ≈ 856 B core + ≈ 88 B admission | [M, static frames] |
 | LMS W4 verify | 473–563 hash calls; ≈ 42 ms at 64 MHz (software SHA-256) | [M calls; E time] |
 | LMS-SHAKE verify | ≈ 570 Keccak permutations ≈ 151 ms (≈ 17,000 cycles/permutation, weak estimate) | [E] |
-| Admission (2-fault bounds, 12 classes) | ≈ 3–10 ms at 64 MHz | [E] |
+| Admission (2-fault bounds, 12 classes) | ≈ 3–10 ms at 64 MHz | [E] — host measurement of the same operation (`ac_tbl_upper`, nf=12, k≤2, `tests/bench_policy8.c`) takes ≈ 21.4 µs on a ~2026 x86 laptop at -O2; scaling by a rough clock+throughput factor (~100–300×) for a 64 MHz Cortex-M0+ lands in the same 2–6 ms range, which is consistent with (does not prove) this estimate. See CLM-23. The on-device *per-transition* hot path is `ac_tbl_authorises`, a single bit test (< 1 ns host-measured): `ac_tbl_upper`/`ac_tbl_lower` run once at policy provisioning, not per admission. |
 | Witnessed receipt | ≈ 6 KB, ≈ 85 ms (two LMS cosignatures + 24-level proof) | [E] |
 | T1 transition, dual | 2 LMS signatures (≈ 2 × 2.5 KB) + receipt ≈ 11 KB; ≈ 280 ms verify (SHA-256 LMS ≈ 42 ms + SHAKE256 LMS ≈ 151 ms + receipt ≈ 85 ms) | [E] |
 | Protection-ready time with Merkle-page + stored root | ≈ 1.5–2.8 ms (first 2 KiB page) | [E] |

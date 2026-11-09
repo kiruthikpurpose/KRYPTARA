@@ -1,5 +1,7 @@
 # KRYPTARA
 
+[![checks](https://github.com/kiruthikpurpose/KRYPTARA/actions/workflows/ci.yml/badge.svg)](https://github.com/kiruthikpurpose/KRYPTARA/actions/workflows/ci.yml)
+
 **Kiruthik's Recursive Yielding Paradigm for Transformative and Adaptive Reconfigurable Architectures.**
 
 A research and implementation repository. What is verified today is one thing: a **governed-change kernel** for long-lived devices and artefacts (evidence atoms, interval-admitted policy tables, a hash-chained authority record, staged haltable effects). Post-quantum migration is one application. The wider "paradigm" is Speculative and unsupported by evidence.

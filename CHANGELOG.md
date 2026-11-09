@@ -12,9 +12,12 @@
 - REQ-LIFE-02 (slot-holder co-signature, F-R2-03): added `ac_key_install_authorised` to `src/policy8.c`
   (tested by `tests/redteam_r2/fixcheck.c` cases I/J/K, 0 failures); `Repl3OK` in
   `simulations/tla/FirstStage.tla` now requires `ValidSig(r.sg, Esc)` whenever slot 3 is active.
-  ADR-015 moved Proposed → Accepted. GATE-08 (TLA+ base run) re-run against the updated model; see
-  `simulations/tla/out_base.txt` for the current run status — treat as "not yet passed" until it
-  finishes with no invariant violation.
+  ADR-015 moved Proposed → Accepted. GATE-08 (TLA+ base run) re-run against the updated model: killed
+  after 14m43s without finishing (249M states generated, 40M distinct; queue falling from an 8.5M peak
+  to 4.9M when stopped — converging, not diverging, but too slow for the time available). No invariant
+  violation was reported before termination, but a run that didn't finish proves nothing either way.
+  GATE-08 remains **not passed**; the state space is too large for a laptop-class run in this time
+  budget and needs either more time/memory or a reduced/abstracted config to actually complete.
 - REQ-LINT-03 (declared site-controller group mode, F-R2-04): added `site_controller=` to
   `structures()`/`lint()` in `models/lint.py`. Demonstrates that OPERATE's claimed 1-safe/live interval
   is empty when `OWN` is declared site controller, confirming F-R2-04's correlated-presence finding at
@@ -29,3 +32,32 @@
   condition was not triggered over this range (CLM-22). Hazards remain illustrative (CLM-08).
 - The legacy-requirements reconciliation (221 items, next-work item 4) and ADR migration (item 5) were
   not started in this pass — see `docs/research/open-questions.md`.
+
+## 2026-11-09: simulated datasets, host measurements, literature grounding
+- Added `simulations/fleet_uncertainty.py` (CLM-24): propagates hazard-rate PARAMETER uncertainty
+  (log-normal, σ=0.5) through the existing `models/brick_mc.py` Monte Carlo, 200 draws × 1,500
+  trials/design/draw (1.5M device-trials, ~5 min, <40 MB RAM). Produces a 1,000-row dataset
+  (`simulations/data/fleet_uncertainty.csv`, 72 KiB) and confirms CLM-08's governance-loss ordering
+  holds in all 200/200 individual draws, not just at the single illustrative point. `--quick` mode
+  (20 draws × 300 trials, ~5 s) wired into `run_all_checks.sh` step [10].
+- Added `tests/bench_policy8.c` (CLM-23): real host-measured timing (gcc -O2, `clock_gettime`) of the
+  admission table primitives in `src/policy8.c`. `ac_tbl_upper` at nf=12/k≤2 (the case resource-
+  estimates.md's "admission, 12 classes" row describes) measures ≈21.4 µs on a 2026 x86 laptop —
+  scaling by clock+throughput to a 64 MHz Cortex-M0+ lands inside the existing 3–10 ms [E] estimate,
+  corroborating it. The actual per-transition hot path, `ac_tbl_authorises`, is sub-nanosecond (a
+  single bit test); `ac_tbl_upper`/`lower` run once at provisioning, not per admission. No ARM
+  toolchain or silicon was available in this environment, so this is a host measurement used to sanity
+  check an existing estimate, not a replacement for EXP-19.
+- Updated CLM-11 (hash-family independence) with a real citation for the *structural* independence of
+  SHA-2 (Merkle–Damgård lineage) vs SHA-3/Keccak (sponge, chosen by public competition explicitly as
+  insurance against a SHA-2 break): NIST's SHA-3 project rationale and the CRYPTREC SHA-3 security
+  evaluation report. This grounds the claim that the *designs* are independent; "independent enough"
+  as a cryptanalytic security property is still EXP-18, not run — searched for published quantitative
+  HSM/key-custody failure-rate data for CLM-08 and found none public, confirming "illustrative, not
+  measured" was the honest label rather than an oversight.
+- Environment note: this machine has ~8.7 GB free disk and ~1 GB free RAM under normal desktop load
+  (Brave + VS Code already using most of 8 GB). All new scripts were kept small and pure-Python/numpy
+  (already installed, nothing new downloaded) or a single tiny C file; no ARM toolchain, Docker, or
+  other heavy tooling was installed. The TLA+ GATE-08 run from the previous pass was identified as the
+  actual risk (it had grown its on-disk state to 1.2 GB before being killed) — `simulations/tla/states/`
+  is now gitignored so a future run can't silently fill the disk.

@@ -1,0 +1,62 @@
+name: gate-08-tla
+# GATE-08: run the TLA+ base model (simulations/tla/FirstStage.tla, cfg_base) to actual completion.
+# Locally this was tried twice and killed both times (14m43s / 249M states generated, 40M distinct,
+# queue still falling but not empty) -- not because of a bug, but because a laptop with 8GB RAM and
+# a few minutes of patience is the wrong tool for an exhaustive state-space search. A GitHub-hosted
+# runner has more RAM, more disk, and can be given real wall-clock time without costing anyone's
+# laptop a thing, so this workflow is where GATE-08 gets a genuine chance to finish.
+#
+# Manual trigger only (workflow_dispatch): this can run for hours and generate gigabytes of on-disk
+# BFS state, which has no business running on every push. Download tla2tools.jar fresh each run
+# rather than vendoring a ~2MB binary into the repo.
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: "TLC config to run (cfg_<name>.cfg in simulations/tla/)"
+        required: false
+        default: "base"
+
+permissions:
+  contents: read
+
+jobs:
+  tlc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # GitHub's hosted-runner job cap is 360 minutes on the free tier
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Fetch TLA+ tools
+        run: curl -sSL -o /tmp/tla2tools.jar
+          "https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar"
+
+      - name: Run TLC (bounded by the job timeout, not by a laptop's patience)
+        working-directory: simulations/tla
+        env:
+          TLA_JAR: /tmp/tla2tools.jar
+        run: bash run.sh "${{ github.event.inputs.config }}"
+
+      - name: Show result
+        if: always()
+        working-directory: simulations/tla
+        run: |
+          grep -v JAVA_TOOL "out_${{ github.event.inputs.config }}.txt" | \
+            grep -E "^Error: (Inv|Temporal|Action|Deadlock)|violated|No error|states generated|Finished in" | tail -20
+          echo "---"
+          cat "time_${{ github.event.inputs.config }}.txt" 2>/dev/null || true
+
+      - name: Upload raw output (state dir excluded -- can be multi-GB, see .gitignore)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tla-gate08-${{ github.event.inputs.config }}-${{ github.run_id }}
+          path: |
+            simulations/tla/out_${{ github.event.inputs.config }}.txt
+            simulations/tla/time_${{ github.event.inputs.config }}.txt
+          retention-days: 14

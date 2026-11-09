@@ -11,4 +11,8 @@ echo "== [5] hardened-API fail-closed checks (red-team R2)"; gcc -O1 -I src -o "
 echo "== [6] red-team R2 path analysis (informational)"; (cd tests/redteam_r2 && python3 r2_absent.py | tail -8)
 if command -v arm-none-eabi-gcc >/dev/null; then echo "== [7] Cortex-M0+ size"; arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -c src/policy8.c -o "$BUILD/policy8_m0.o" && arm-none-eabi-size "$BUILD/policy8_m0.o"; fi
 echo "== [8] GATE-12 hazard sweep (simulations/hazard_sweep.py)"; python3 simulations/hazard_sweep.py | tail -3
+echo "== [9] host timing of admission table primitives (tests/bench_policy8.c)"
+gcc -O2 -o "$BUILD/bench_policy8" tests/bench_policy8.c && "$BUILD/bench_policy8"
+echo "== [10] CLM-24 hazard parameter-uncertainty sweep, quick mode (simulations/fleet_uncertainty.py --quick)"
+python3 simulations/fleet_uncertainty.py --quick | tail -4
 echo "ALL CHECKS COMPLETED"

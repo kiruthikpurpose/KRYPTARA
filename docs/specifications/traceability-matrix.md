@@ -17,7 +17,7 @@ Chain: source evidence → principle → claim → decision → requirement → 
 | Rev 4 §6.11 | — | ADR-007 | REQ-IMG-01 | locked stage | `simulations/tla/FirstStage.tla` (model) | TLC | Incomplete (GATE-08) |
 | Rev 4 §6.6 | — | ADR-008 | REQ-CHAIN-01 | record | `src/prototypes/` | prototype tests | Prototype only |
 | Rev 4 §4.4 | — | ADR-009 | REQ-HALT-01 | effect | TLA+ model | TLC | Incomplete |
-| R2 red-team | — | ADR-015 | REQ-LIFE-02 | lifecycle | `src/policy8.c` `ac_key_install_authorised`; `Repl3OK` in `simulations/tla/FirstStage.tla` | `fixcheck.c` (I/J/K); TLC cfg_base | Passed (C unit tests); TLC run in progress (GATE-08) |
+| R2 red-team | — | ADR-015 | REQ-LIFE-02 | lifecycle | `src/policy8.c` `ac_key_install_authorised`; `Repl3OK` in `simulations/tla/FirstStage.tla` | `fixcheck.c` (I/J/K); TLC cfg_base | Passed (C unit tests); TLC run killed after 14m43s, not finished — GATE-08 not passed, model-level claim unverified |
 | R2 red-team | — | ADR-015 | REQ-LINT-03 | tooling | `models/lint.py` `site_controller=` | `lint.py` | Passed |
 | Rev 4 §9 | CLM-07, 12 | ADR-003 | — | admission | `src/policy8.c` | `arm-none-eabi-size` | Size measured; time not |
 | SIM-01 | CLM-08, 18 | ADR-004 | REQ-TIER-01 | tiers | `models/brick_mc.py` | MC run | Illustrative |
