@@ -61,3 +61,47 @@
   other heavy tooling was installed. The TLA+ GATE-08 run from the previous pass was identified as the
   actual risk (it had grown its on-disk state to 1.2 GB before being killed) — `simulations/tla/states/`
   is now gitignored so a future run can't silently fill the disk.
+
+## 2026-11-09: nine requirements implemented, legacy requirements reconciled, 23 ADRs migrated
+Closes out next-work items 4 and 5, and clears every remaining non-hardware "not yet verified"/
+"not implemented" requirement row.
+
+- **REQ-EVD-02, REQ-EVD-03** (`src/policy8.c`): `ac_derive_assumption_label`/`ac_derive_labels`
+  (assumption bits come only from a closed provider table, never caller input) and
+  `ac_no_duplicate_keys` (rejects two present SIG atoms with identical key hashes). Tested by
+  `fixcheck.c` cases S–W and Q–R.
+- **REQ-NV-01** (`src/policy8.c`): `ac_tbl_dual_init`/`ac_tbl_dual_consistent`/`ac_tbl_dual_authorises`
+  — dual storage with complements, decisions evaluated twice, fails closed on a single-bit-flip
+  disagreement between the two copies. Tested by `fixcheck.c` cases L–P.
+- **REQ-TIER-02** (`models/tiers_extra.py`): T1 is never itself 2-safe, and REQ-LIFE-02 never shrinks
+  the minimum-cut distance to full control relative to allowing unco-signed rotation. 0 failures,
+  both reference profiles.
+- **REQ-PRES-02** (`models/lint.py` `site_controller_guard`): RECOVERY and CONST both reject OEM,
+  OWN, and ESC as candidate site controllers (0/6 violations) — the lint-level guard F-R2-04 asked for.
+- **REQ-PUB-01** (`models/witness_receipt.py`): reference check of the ≥2-independent-logs counting
+  rule, 7/7 cases. Explicitly not a real C2SP/Tessera verifier — that component doesn't exist yet.
+- **REQ-STALE-01** (`models/stale_bound.py`): catch-up gate requiring presence only when staleness is
+  measurable (RTC trusted, age > window), 5/5 cases.
+- **REQ-CHAIN-01** (`models/hash_chain.py`): reference hash-chain algorithm — tamper detection, domain
+  separation, per-link (not current-table) policy verification, 5/5 cases.
+- **REQ-HALT-01** (`models/halt_budget.py`): property test of the three stated invariants over 2,000
+  random action sequences, 0 violations. A Python reference state machine, not the planned exhaustive
+  TLA+ spec (still incomplete, rides on GATE-08).
+- All nine wired into `run_all_checks.sh` (steps [2]/[3]/[11]–[14]) as GATE-15.
+- **Legacy requirements reconciliation** (next-work item 4): `scripts/reconcile_legacy_requirements.py`
+  mechanically classifies all 221 `FR-`/`NFR-` rows in `research-archive/streams/R_requirements.md`
+  against the 23 current `REQ-` rows → `docs/research/legacy-requirements-reconciliation.md`: 11
+  likely covered, 62 out of scope for the kernel today (update/migration/enclave/ownership/
+  provisioning/governance/certification — Phase 2+ features), 148 gap candidates still needing a
+  human semantic triage pass. This is a classification pass, not a verification — explicitly flagged
+  as such in the output.
+- **Legacy decision migration** (next-work item 5): `scripts/migrate_legacy_decisions.py` generated
+  ADR-016..038 directly from `legacy-decision-record.md`'s own Decision/Why/Alternatives columns for
+  every remaining `D-xx` item (D-01..D-19, D-32..D-34, D-36) not already covered by ADR-001..015.
+  Every "DECIDED" legacy item now has an ADR. The C-xx/X-xx/J-xx tables (~80 items, conditional/
+  research/rejected) were deliberately NOT split into individual ADRs — see `docs/decisions/README.md`
+  for why.
+- Not done, and not claimable as done: GATE-08 (TLA+ model check, still not passed — see
+  `.github/workflows/gate-08-tla.yml`), REQ-PRES-01 and silicon measurements (EXP-19, E-A1 — no MCU
+  hardware available), and the 148 gap-candidate legacy requirements (need human judgment, not a
+  script).

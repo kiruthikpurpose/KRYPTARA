@@ -49,6 +49,56 @@ int ac_labels_valid(const uint8_t kind[8], const uint32_t lab[8], uint8_t presen
     return 1;
 }
 
+/* REQ-EVD-02 (ADR-002): assumption labels (bits 0..7: which cryptographic assumption/hash family a
+ * verifier relies on) MUST be derived by the device from the verifier descriptor, never accepted as
+ * caller-supplied input; group/site/infrastructure labels (bits 16..31) MAY be declared, but only at
+ * T2 (the caller's responsibility, not checked here -- that is a lifecycle/tier gate, not a label
+ * format rule). PROVIDER_ASSUMPTION is a closed, fixed table: an unknown provider id derives to 0
+ * (no assumption claimed), never to a caller-chosen value, so a malicious or buggy caller cannot
+ * forge which hash family a key is assumed to depend on. */
+#define AC_PROVIDER_COUNT 4
+static const uint32_t AC_PROVIDER_ASSUMPTION[AC_PROVIDER_COUNT] = {
+    0x01, /* 0: LMS/HSS over SHA-256   -> family H1 */
+    0x02, /* 1: LMS/HSS over SHAKE256  -> family H2 */
+    0x04, /* 2: SLH-DSA (SHA2 or SHAKE parameter set folded into the same family bit as its base hash) */
+    0x08, /* 3: ML-KEM-768 (enrolment only, not a SIG atom; included for completeness) */
+};
+uint32_t ac_derive_assumption_label(unsigned provider_id) {
+    return (provider_id < AC_PROVIDER_COUNT) ? AC_PROVIDER_ASSUMPTION[provider_id] : 0u;
+}
+/* Combines the device-derived assumption bits (authoritative, bits 0..7) with the caller-declared
+ * group/site/infra bits (bits 16..31, passed through as-is -- their T2-only gating happens upstream)
+ * into the final per-atom label. Declared bits 0..7, if any, are masked away: the caller cannot
+ * inject an assumption label no matter what it passes in declared[i]. */
+void ac_derive_labels(uint32_t out[8], const uint8_t provider[8], const uint32_t declared[8], uint8_t present) {
+    for (unsigned i = 0; i < 8; i++) {
+        if (!(present >> i & 1u)) { out[i] = 0; continue; }
+        out[i] = ac_derive_assumption_label(provider[i]) | (declared[i] & 0xffff0000u);
+    }
+}
+
+/* REQ-EVD-03: duplicate key hashes MUST be rejected. Two present SIG atoms carrying the same key
+ * hash would defeat custody separation (one compromised physical key counts as two independent
+ * atoms in the fault model). Compares full 32-byte hashes; only present SIG atoms (kind 1) are
+ * checked, matching ac_labels_valid's scope. O(nf^2) over at most 8 atoms, no allocation. */
+typedef struct { uint8_t h[32]; } ac_key_hash_t;
+
+static int ac_hash_eq(const ac_key_hash_t *a, const ac_key_hash_t *b) {
+    uint8_t d = 0;
+    for (unsigned i = 0; i < 32; i++) d |= (uint8_t)(a->h[i] ^ b->h[i]);
+    return d == 0;
+}
+int ac_no_duplicate_keys(const uint8_t kind[8], const ac_key_hash_t key[8], uint8_t present) {
+    for (unsigned i = 0; i < 8; i++) {
+        if (!((present >> i & 1u) && kind[i] == 1)) continue;
+        for (unsigned j = i + 1; j < 8; j++) {
+            if (!((present >> j & 1u) && kind[j] == 1)) continue;
+            if (ac_hash_eq(&key[i], &key[j])) return 0;
+        }
+    }
+    return 1;
+}
+
 /* Unions of exactly k (0,1,2) distinct fault classes; excl[a] bit b excludes the pair (a,b). */
 static unsigned covered(unsigned m, const uint8_t *f, unsigned nf, unsigned k, uint8_t extra,
                         const uint32_t *excl, int want_subset) {
@@ -120,6 +170,33 @@ int ac_tbl_is_projected(const ac_tbl_t *t, uint8_t present) {
     ac_tbl_t p; ac_tbl_project(&p, t, present);
     uint32_t d = 0; for (unsigned i = 0; i < 8; i++) d |= p.w[i] ^ t->w[i];
     return d == 0;
+}
+
+/* REQ-NV-01: tables MUST be stored with complements and decisions MUST be evaluated twice with
+ * complementary encodings. A dual-stored table detects single-word bit-flip corruption (flash wear,
+ * radiation, torn write) that a single copy cannot: if the live copy and the stored complement no
+ * longer agree, ac_tbl_dual_authorises refuses rather than trusting either one. */
+typedef struct { ac_tbl_t t; ac_tbl_t c; } ac_tbl_dual_t;
+
+void ac_tbl_dual_init(ac_tbl_dual_t *d, const ac_tbl_t *t) {
+    d->t = *t;
+    for (unsigned i = 0; i < 8; i++) d->c.w[i] = ~t->w[i];
+}
+/* Returns 1 iff the stored complement still bitwise-inverts the live table (no corruption detected). */
+int ac_tbl_dual_consistent(const ac_tbl_dual_t *d) {
+    uint32_t bad = 0;
+    for (unsigned i = 0; i < 8; i++) bad |= d->t.w[i] ^ ~d->c.w[i];
+    return bad == 0;
+}
+/* Evaluates S against BOTH encodings independently and only authorises if they agree; a
+ * single-word fault that flips a bit in exactly one of the two copies is caught here, not just by
+ * the (cheaper, coarser) full-table ac_tbl_dual_consistent check, because this decodes S from each
+ * copy on every call rather than trusting a consistency check done once at load time. */
+int ac_tbl_dual_authorises(const ac_tbl_dual_t *d, uint8_t S) {
+    unsigned from_t = tb(&d->t, S);
+    unsigned from_c = !tb(&d->c, S);
+    if (from_t != from_c) return 0;   /* disagreement: fail closed, do not pick a winner */
+    return (int)from_t;
 }
 
 /* REQ-LIFE-02: installing a key into an ACTIVE custody slot MUST also carry that slot's own

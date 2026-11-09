@@ -67,6 +67,17 @@ def lint(table, atoms, present, t, s, **kw):
     U, Lo = upper(N, Ac), lower(N, Al)
     return dict(safe=(table & ~U) == 0, live=(Lo & ~table) == 0, exists=(Lo & ~U) == 0, U=U, Lo=Lo)
 
+def site_controller_guard(table, atoms, present, t, s, group_label, **kw):
+    """REQ-PRES-02: 'A site-controller group declared at T2 MUST NOT satisfy presence for its own
+    recovery tier in the default profile.' Lint-level guard: re-run `lint` with that group declared
+    as the correlated-presence site controller (REQ-LINT-03's `site_controller=`) and REJECT the
+    declaration (return False = violation) if the table stops being safe-and-live under that
+    assumption. This is a procurement-time check on a profile declaration, not a device-time check;
+    the device has no way to know who "controls the site" and REQ-PRES-01 already requires presence
+    sampling to be firmware-independent, so there is nothing for the locked stage to enforce here."""
+    r = lint(table, atoms, present, t, s, site_controller=group_label, **kw)
+    return r["exists"] and r["safe"] and r["live"]
+
 def tbl(pred):
     t = 0
     for m in range(1 << N):
@@ -150,3 +161,26 @@ if __name__ == "__main__":
     for n_, t_ in [("HALT", HALT), ("OPERATE", OPERATE), ("CONST", CONST), ("RECOVERY", RECOVERY),
                    ("R_OPERATE", REMOTE_OPERATE), ("R_CONST", REMOTE_CONST2)]:
         print(f"  {n_:9s} " + " ".join(f"{(t_ >> (64*i)) & ((1<<64)-1):016x}" for i in range(4)) + f"  popcount={bin(t_).count('1')}")
+
+    # REQ-PRES-02: "A site-controller group declared at T2 MUST NOT satisfy presence for its own
+    # recovery tier in the default profile." For the default terrestrial profile, RECOVERY and
+    # CONST must each REJECT (site_controller_guard -> False) every group as a candidate site
+    # controller, i.e. none of OEM/OWN/ESC may be declared to run the site without breaking T2's
+    # safe-and-live claim. A guard returning True (profile stays safe+live) for any group is the
+    # violation this requirement exists to catch.
+    print("\nREQ-PRES-02 check (no custody group may be the declared site controller at T2):")
+    req_pres_02_failures = 0
+    T2_PROFILES = [
+        ("RECOVERY", RECOVERY, ALL, 1, 2, dict(loss_labels={"group", "family"}, exclude_loss_combo=BOTHF)),
+        ("CONST", CONST, ALL, 2, 1, dict(loss_labels={"group"})),
+    ]
+    for tier_name, table, present, t, s_, kw in T2_PROFILES:
+        for grp in ("group:OEM", "group:OWN", "group:ESC"):
+            ok = site_controller_guard(table, ATOMS, present, t, s_, grp, **kw)
+            print(f"  {tier_name:8s} with {grp:12s} as site controller: "
+                  f"{'VIOLATION (stays safe+live, i.e. that group alone could run the site)' if ok else 'rejected (correctly unsafe)'}")
+            if ok:
+                req_pres_02_failures += 1
+    print(f"REQ-PRES-02 failures={req_pres_02_failures}")
+    if req_pres_02_failures:
+        raise SystemExit(1)

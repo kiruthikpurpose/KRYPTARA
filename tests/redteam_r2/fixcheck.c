@@ -13,4 +13,27 @@ int main(){ ac_tbl_t U,L; uint8_t f[3]={1,2,4}; int bad=0;
  bad+= ac_key_install_authorised(&all, 0x06, 0x01, 1)!=0;   /* I: active slot, holder (bit0) absent -> refused */
  bad+= ac_key_install_authorised(&all, 0x07, 0x01, 1)!=1;   /* J: active slot, holder present -> ok */
  bad+= ac_key_install_authorised(&all, 0x06, 0x01, 0)!=1;   /* K: no key yet, no holder to co-sign -> ok */
+ /* REQ-NV-01: tables stored with complements, decisions evaluated twice with complementary encodings */
+ ac_tbl_dual_t d; ac_tbl_dual_init(&d, &all);
+ bad+= ac_tbl_dual_consistent(&d)!=1;                        /* L: freshly-initialised dual is consistent */
+ bad+= ac_tbl_dual_authorises(&d, 0x42)!=1;                  /* M: all-bits table authorises everything */
+ d.c.w[2] ^= 1u;                                              /* simulate a single-bit flip in the complement copy */
+ bad+= ac_tbl_dual_consistent(&d)!=0;                        /* N: corruption detected */
+ bad+= ac_tbl_dual_authorises(&d, 64)!=0;                     /* O: the corrupted bit (S=64 is bit 6 of word 2) fails closed */
+ bad+= ac_tbl_dual_authorises(&d, 1)!=1;                     /* P: an untouched bit still authorises normally */
+ /* REQ-EVD-03: duplicate key hashes must be rejected */
+ uint8_t kd2[8]={1,1,0,0,0,0,0,0}; ac_key_hash_t kh[8]={0};
+ kh[0].h[0]=0xAA; kh[1].h[0]=0xAA;                             /* same hash in two present SIG slots */
+ bad+= ac_no_duplicate_keys(kd2, kh, 0x03)!=0;                /* Q: duplicate rejected */
+ kh[1].h[0]=0xBB;
+ bad+= ac_no_duplicate_keys(kd2, kh, 0x03)!=1;                /* R: distinct hashes accepted */
+ /* REQ-EVD-02: assumption labels are device-derived, never caller-supplied */
+ bad+= ac_derive_assumption_label(0)!=0x01;                   /* S: known provider -> fixed assumption bit */
+ bad+= ac_derive_assumption_label(99)!=0;                     /* T: unknown provider -> 0, never forged */
+ uint8_t prov[8]={0,1,0,0,0,0,0,0}; uint32_t decl[8]={0}; uint32_t out[8];
+ decl[0] = 0xffff | (0xAAu<<16);                               /* caller tries to inject assumption bits 0..15 AND a group label */
+ ac_derive_labels(out, prov, decl, 0x03);
+ bad+= (out[0] & 0xffffu) != 0x01;                            /* U: caller's injected assumption bits were masked away */
+ bad+= ((out[0]>>16) & 0xffu) != 0xAAu;                       /* V: declared group/site bits pass through untouched */
+ bad+= out[1] != 0x02;                                        /* W: provider 1 (SHAKE256) derives independently */
  printf("fixcheck failures=%d\n",bad); return bad;}

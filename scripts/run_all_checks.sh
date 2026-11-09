@@ -15,4 +15,10 @@ echo "== [9] host timing of admission table primitives (tests/bench_policy8.c)"
 gcc -O2 -o "$BUILD/bench_policy8" tests/bench_policy8.c && "$BUILD/bench_policy8"
 echo "== [10] CLM-24 hazard parameter-uncertainty sweep, quick mode (simulations/fleet_uncertainty.py --quick)"
 python3 simulations/fleet_uncertainty.py --quick | tail -4
+echo "== [11] REQ-STALE-01 reference check (models/stale_bound.py)"; (cd models && python3 stale_bound.py | tail -3)
+echo "== [12] REQ-PUB-01 reference check (models/witness_receipt.py)"; (cd models && python3 witness_receipt.py | tail -3)
+echo "== [13] REQ-HALT-01 property test (models/halt_budget.py)"; (cd models && python3 halt_budget.py)
+echo "== [14] REQ-CHAIN-01 hash-chain reference check (models/hash_chain.py)"; (cd models && python3 hash_chain.py | tail -3)
+echo "== [15] legacy requirements reconciliation regenerates cleanly (scripts/reconcile_legacy_requirements.py)"
+python3 scripts/reconcile_legacy_requirements.py
 echo "ALL CHECKS COMPLETED"
