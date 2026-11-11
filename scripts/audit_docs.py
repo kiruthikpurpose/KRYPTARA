@@ -27,4 +27,6 @@ for m in set(re.findall(r"CLM-\d+", allt)):
     if m not in clm_def: bad.append(f"{m} referenced, not defined")
 ids = re.findall(r"^\| (REQ-[A-Z]+-\d+) \|", (D/"specifications/requirements.md").read_text(), re.M)
 if len(ids) != len(set(ids)): bad.append("duplicate REQ ids")
+clm_ids = re.findall(r"^\| (CLM-\d+) \|", (D/"research/evidence-register.md").read_text(), re.M)
+for dup in {c for c in clm_ids if clm_ids.count(c) > 1}: bad.append(f"duplicate CLM id: {dup}")
 print("\n".join(bad) or "AUDIT PASSED"); print(len(docs), "markdown files checked"); sys.exit(1 if bad else 0)

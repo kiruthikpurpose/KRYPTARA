@@ -31,6 +31,7 @@
 * **Above the waist:** Rust preferred, C where vendor SDKs require it.
 * **Host:** Rust for production tools; Python for reference models, simulations and the lint reference.
 * **Dependencies:** none in `/core`. Providers wrap mlkem-native and mldsa-native. Our own verify-only LMS and SLH-DSA are permissively licensed. **Avoided:** PQClean (archived 2026-08-04 [S, landscape audit]), pqm4 as a dependency, liboqs in firmware, and GPL in firmware.
+* **Host-side conformance evidence only (item 18, not a firmware dependency):** `models/pqc_conformance.py` integrates `mlkem` (PyPI, Rust-backed, actively functioning — verified directly, FIPS 203 ciphertext sizes match for all 3 parameter sets), `mldsa` (PyPI, pure-Python ML-DSA **verify-only**, author Filippo Valsorda — deliberately matches this project's own verify-only design intent, tested by its author against Wycheproof/CCTV vectors), `dilithium-py` (PyPI, author Giacomo Pope, actively maintained Oct 2026, used here ONLY as a test-harness signer — its own README states it is not constant-time and not for production use, consistent with that scoping), and `slh-dsa` (PyPI, author colinxu2020, actively maintained, ~150k downloads/month, a direct dependency of trezor-firmware [S, web search 2026-11-09]). None of these are PQClean-derived, and none are called from any device/firmware code path — this is conformance evidence that the algorithms behave as FIPS 203/204/205 describe, not a device dependency decision.
 
 ### 13.3 Development infrastructure
 

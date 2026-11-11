@@ -42,4 +42,10 @@ echo "== [23] second application domain: CA root governance (models/second_domai
 echo "== [24] static stack analysis, host x86-64 (scripts/stack_analysis.sh)"; bash scripts/stack_analysis.sh
 echo "== [25] crypto provider conformance suite: our sha256.c vs OpenSSL vs Python hashlib (scripts/provider_conformance.sh)"
 bash scripts/provider_conformance.sh
+echo "== [26] PQC conformance: ML-KEM/ML-DSA/SLH-DSA via maintained libraries (models/pqc_conformance.py)"
+(cd models && python3 pqc_conformance.py)   # skips cleanly if mlkem/mldsa/dilithium-py/slh-dsa aren't installed
+echo "== [27] RFC 9162 Merkle inclusion-proof reference check (models/merkle_inclusion.py)"; (cd models && python3 merkle_inclusion.py)
+echo "== [28] ac-ceremony custody-graph capture/replay tool (scripts/ac_ceremony.py)"
+python3 scripts/ac_ceremony.py test   # replay-dependent cases skip cleanly without cbor2
+echo "== [29] 'Recursive' as a testable property (models/recursive_property.py)"; (cd models && python3 recursive_property.py)
 echo "ALL CHECKS COMPLETED"

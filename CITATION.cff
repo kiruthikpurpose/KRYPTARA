@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: >-
+  If you use or reference this work, please cite it as below. No licence has
+  been selected yet for this repository (see LICENSE) -- this file identifies
+  the work for citation purposes and does not grant any usage rights beyond
+  whatever LICENSE currently states.
+title: KRYPTARA
+abstract: >-
+  A research and implementation repository for a governed-change kernel for
+  long-lived devices and artefacts: evidence atoms, interval-admitted policy
+  tables, a hash-chained authority record, and staged haltable effects.
+  Post-quantum migration is one application; the wider "paradigm" named by
+  the project title is Speculative and unsupported by evidence (see
+  docs/vision-and-scope.md).
+authors:
+  - name: kiruthikpurpose
+    email: kiruthikpurpose@gmail.com
+repository-code: "https://github.com/kiruthikpurpose/KRYPTARA"
+date-released: "2026-11-09"
+keywords:
+  - governed-change kernel
+  - post-quantum cryptography
+  - evidence-based admission control
+  - fault-tolerant authority
+  - embedded security

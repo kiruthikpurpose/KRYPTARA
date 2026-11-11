@@ -3,6 +3,13 @@
 #            50-things roadmap -- a roundabout for a full Lean/Coq proof, which needs a
 #            multi-GB toolchain not installed anywhere in this project).
 # cbor2:     models/wire_format.py differential check against an independent CBOR encoder.
+# mlkem, mldsa, dilithium-py, slhdsa: models/pqc_conformance.py (item 18) -- maintained
+#            implementations of ML-KEM/ML-DSA/SLH-DSA (FIPS 203/204/205), used for host-side
+#            conformance evidence only. Not integrated into any device/firmware code path.
 -r requirements.txt
 z3-solver
 cbor2
+mlkem
+mldsa
+dilithium-py
+slh-dsa
