@@ -1,7 +1,7 @@
 <!-- Title: Problem analysis and problem-to-mechanism mapping -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L3. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 1. The deeper problem
 
@@ -100,7 +100,7 @@ These are stated up front so that nothing later implies otherwise.
 | G1 | Signature algorithm obsolete or broken (incl. a quantum computer) | Algorithms hard-coded as the root; classes not counted | Assumption labels from descriptors; `DECLARE_CLASS_DEAD`; renewal invariant; hash-based locked stage | `ac-policy`, `ac-hbs-verify`, planner | Migration is a class retirement, not a re-flash; no tier ever admits DLOG-only evidence | Lint on fleet labels; IR 8547 date tracking; conformance vectors |
 | G2 | Hash-family break | Single hash under every signature | Dual families (κ ≥ 2) + presence as third class | dual profile, PRES atom | Silent break forges nothing; declared break leaves governance live with presence | Theorem 1 + lint [M]; EXP-18 independence review |
 | G3 | Single key compromise | Keys treated as roots | Single fault never authorises above HALT; continuity-signed rotation | tiers, `ROTATE_KEY` | A thief can at most spend a halt budget | Lint; TLA+ invariant; red-team drills |
-| G4 | Custodian compromise / insider | One organisation holds every key | Three custody groups; group as a fault class | custody groups, ceremony | One bad organisation cannot act | Lint; ceremony audit |
+| G4 | Custodian compromise / insider | One organisation holds every key | Three custody groups; group as a fault class | custody groups, ceremony | One bad organisation cannot act, unless it also controls the site's presence input (F-R2-04, REQ-LINT-03) | Lint; ceremony audit |
 | G5 | Custodian loss | Authority assumes permanent parties | Loss budgets; re-key at T2 (or T1 remote); renewal invariant | `REKEY_GROUP`, govsim | P(permanent governance loss, 40 yr) ≈ 1.0% vs 39% (Rev 2 rule) [M, illustrative] | `brick_mc.py`; EXP-14 calibration |
 | G6 | Ownership change | Bearer secrets or vendor mediation | `TRANSFER_OWNER` with current owner + one other group | T1 | Single-hop transfer without a vendor | End-to-end test; pilot |
 | G7 | Vendor exit or hostility | OEM required for every change | `SOVEREIGN_EXIT` (OWNER + ESCROW, OEM excluded); halt budget + resume | T2/T1 remote, T0 rules | Fleet survives the vendor; hostile halts are bounded | Demonstration with OEM keys destroyed (Phase 2) |

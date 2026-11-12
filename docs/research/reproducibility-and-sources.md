@@ -1,26 +1,26 @@
 <!-- Title: Reproducibility index and sources (Rev 4) -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L3. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 21. Reproducibility index and sources
 
 ### 21.1 Every computed number, and how to reproduce it
 
-All paths are relative to the project's `blueprint/` folder.
+Paths are relative to the repository root.
 
 | Claim | Script | Command |
 |---|---|---|
-| Dedekind counts; 6-slot counts (4,778,188; 1,227,427; 0) | `code/G/enum6.py`, `code/G/policy_study.py`, `code/G/theory.py` | `python3 theory.py` |
-| Interval theorem on 1,050 random structures; class-count law | `code/G/interval.py` | `python3 interval.py` |
-| Tier tables, budgets, impossibility catalogue | `code/G/lint.py`, `code/G/tiers_extra.py` | `python3 lint.py; python3 tiers_extra.py` |
-| C admission ≡ Python reference (3,000 cases); 682 B (Rev 4; now 902 B hardened, see CHANGELOG); stack 88 B | `code/G/policy8.c`, `p8test.c`, `p8check.py` | `gcc -O2 -o p8test p8test.c && python3 p8check.py`; `arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -c policy8.c` |
-| Governance-loss Monte Carlo | `code/G/brick_mc.py` | `python3 brick_mc.py` (≈ 6 min) |
-| κ disjointness model (19.2×) | `code/B/dq.py` | — |
-| Migration twin (2.31% / 2.32% / 0.15%) | `code/F/migration_twin.py` | — |
-| TLA+ runs (lockout counterexample; 13.5M states) | `code/V/FirstStage.tla` + TLC logs | — |
-| Core size 3,962 B; LMS vectors; power-cut host simulator | `code/E/`, `code/P/` | — |
-| Red-team computations (n = 5 tables) | `code/X/rt.py` | — |
+| Dedekind counts; 6-slot counts (4,778,188; 1,227,427; 0) | `models/enum6.py`, `models/policy_study.py`, `models/theory.py` | `python3 theory.py` |
+| Interval theorem on 1,050 random structures; class-count law | `models/interval.py` | `python3 interval.py` |
+| Tier tables, budgets, impossibility catalogue | `models/lint.py`, `models/tiers_extra.py` | `python3 lint.py; python3 tiers_extra.py` |
+| C admission ≡ Python reference (3,000 cases); 682 B (Rev 4; 902 B hardened, now stale and unmeasured, see CLM-07); stack 88 B | `src/policy8.c`, `src/p8test.c`, `models/p8check.py` | `gcc -O2 -o p8test p8test.c && python3 p8check.py`; `arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -c policy8.c` |
+| Governance-loss Monte Carlo | `models/brick_mc.py` | `python3 brick_mc.py` (≈ 6 min) |
+| κ disjointness model (19.2×) | `simulations/diversity/dq.py` | — |
+| Migration twin (2.31% / 2.32% / 0.15%) | `simulations/twin/migration_twin.py` | — |
+| TLA+ runs (lockout counterexample; base-run status: see GATE-08) | `simulations/tla/FirstStage.tla` + TLC logs | — |
+| Core size 3,962 B; LMS vectors; power-cut host simulator | `src/prototypes/` | — |
+| Red-team computations (n = 5 tables) | `tests/redteam_r2/rt_r1.py` (formerly `code/X/rt.py`; reproduces 1,227 passing tables, 398 = 32.4% breakable by a 2-slot event, 277 robust, re-run 2026-11-12) | — |
 
 ### 21.2 Sources checked in this programme
 

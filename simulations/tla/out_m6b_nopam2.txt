@@ -1,0 +1,27 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 44 and seed -671513069100611649 with 2 workers on 12 cores with 1333MB heap and 64MB offheap memory [pid: 695392] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
+Parsing file /tmp/Integers.tla
+Parsing file /tmp/FiniteSets.tla
+Parsing file /tmp/TLC.tla
+Parsing file /tmp/Naturals.tla
+Parsing file /tmp/Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module FirstStage
+Starting... (2026-11-12 16:08:37)
+Computing initial states...
+Computed 2 initial states...
+Computed 4 initial states...
+Computed 8 initial states...
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 16:08:37.
+Progress(5) at 2026-11-12 16:08:40: 816,218 states generated (816,218 s/min), 203,210 distinct states found (203,210 ds/min), 145,265 states left on queue.
+Progress(10) at 2026-11-12 16:09:40: 29,002,143 states generated (28,185,925 s/min), 7,404,113 distinct states found (7,200,903 ds/min), 4,300,241 states left on queue.
+Progress(10) at 2026-11-12 16:10:40: 57,604,348 states generated (28,602,205 s/min), 11,688,979 distinct states found (4,284,866 ds/min), 5,747,615 states left on queue.
+Progress(11) at 2026-11-12 16:11:40: 84,529,993 states generated (26,925,645 s/min), 15,665,026 distinct states found (3,976,047 ds/min), 6,773,825 states left on queue.
+Progress(11) at 2026-11-12 16:12:40: 108,826,899 states generated (24,296,906 s/min), 19,135,222 distinct states found (3,470,196 ds/min), 7,354,305 states left on queue.
+Progress(12) at 2026-11-12 16:13:40: 132,384,088 states generated (23,557,189 s/min), 22,598,558 distinct states found (3,463,336 ds/min), 7,698,348 states left on queue.
+Progress(12) at 2026-11-12 16:14:40: 155,331,370 states generated (22,947,282 s/min), 26,141,755 distinct states found (3,543,197 ds/min), 7,802,168 states left on queue.

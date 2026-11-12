@@ -9,7 +9,7 @@
 \* assumption set contains fa, or of slot fk. Attacker cannot forge physical presence.
 EXTENDS Integers, FiniteSets, TLC
 
-CONSTANTS MaxF, MaxReq, Rule, AnergyMode, CapGuard, ImgGuard, PamRule, MaxFail, Thresh, HolderCoSign
+CONSTANTS MaxF, MaxReq, Rule, AnergyMode, CapGuard, ImgGuard, PamRule, MaxFail, Thresh, HolderCoSign, EscLost
 
 Slots  == 1..3
 Gens   == 0..MaxF
@@ -81,7 +81,9 @@ Reqs(sigs, vouchers, press, hon, tfs) ==
   \cup { [op |-> "RESTORE", sg |-> s, ts |-> ts, tg |-> 0, nc |-> {}, vo |-> v, pr |-> p, hn |-> hon, tf |-> t] :
        s \in sigs, ts \in Slots, v \in vouchers, p \in press, t \in tfs }
 
-HonestSigs == { f \in [Slots -> {NOSIG} \cup {g \in Gens : g = floor \/ g = floor + 1}] : TRUE }
+\* EscLost = TRUE models OQ-12: slot 3's holder has lost its key, so no honest request carries a
+\* slot-3 signature. (An attacker who stole it, fk = 3, still can; the attacker model is unchanged.)
+HonestSigs == { f \in [Slots -> {NOSIG} \cup {g \in Gens : g = floor \/ g = floor + 1}] : ~EscLost \/ f[Esc] = NOSIG }
 AttackSigs == { f \in [Slots -> {NOSIG} \cup Gens] : \A s \in Slots : f[s] = NOSIG \/ Forge(s, f[s]) }
 
 \* ---------- acceptance predicates ----------

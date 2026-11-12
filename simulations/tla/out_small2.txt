@@ -1,0 +1,26 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 6 and seed -5550391447041411755 with 2 workers on 12 cores with 1333MB heap and 64MB offheap memory [pid: 732087] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
+Parsing file /tmp/Integers.tla
+Parsing file /tmp/FiniteSets.tla
+Parsing file /tmp/TLC.tla
+Parsing file /tmp/Naturals.tla
+Parsing file /tmp/Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module FirstStage
+Starting... (2026-11-12 16:54:31)
+Computing initial states...
+Computed 2 initial states...
+Computed 4 initial states...
+Computed 8 initial states...
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 16:54:31.
+Progress(5) at 2026-11-12 16:54:34: 380,353 states generated (380,353 s/min), 172,729 distinct states found (172,729 ds/min), 110,896 states left on queue.
+Progress(11) at 2026-11-12 16:55:34: 24,281,722 states generated (23,901,369 s/min), 6,921,150 distinct states found (6,748,421 ds/min), 3,021,082 states left on queue.
+Progress(12) at 2026-11-12 16:56:34: 48,085,654 states generated (23,803,932 s/min), 12,097,848 distinct states found (5,176,698 ds/min), 3,129,137 states left on queue.
+Progress(14) at 2026-11-12 16:57:34: 72,770,584 states generated (24,684,930 s/min), 16,514,080 distinct states found (4,416,232 ds/min), 1,337,326 states left on queue.
+Progress(18) at 2026-11-12 16:58:34: 95,263,643 states generated (22,493,059 s/min), 21,501,807 distinct states found (4,987,727 ds/min), 1,481,150 states left on queue.
+Progress(23) at 2026-11-12 16:59:34: 115,607,387 states generated (20,343,744 s/min), 26,165,614 distinct states found (4,663,807 ds/min), 979,101 states left on queue.

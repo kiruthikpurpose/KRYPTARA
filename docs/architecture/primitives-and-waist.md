@@ -1,7 +1,7 @@
 <!-- Title: Four primitives and the frozen waist -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L2. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 4. The four primitives and the waist
 
@@ -31,7 +31,7 @@ Each device holds one 256-bit table per **tier**, stored together with its bitwi
 |---|---|---|---|
 | **T0 HALT** | Pause one named staged activation | none; one custody atom or local presence | Halting only delays. Its abuse is bounded by a per-key budget and override (D-29) |
 | **T1 OPERATE** | Activate an image ≥ floor; advance the floor; rotate a key inside its labels, with the old key's continuity signature; transfer ownership *with* the current owner's participation; operating setpoints; tighten any table; declare a class dead; resume after a halt | (1,1): safe against one compromise of a key, group, family or site; live after one loss of a key, group, family or site | Everyday governance must survive any single failure |
-| **T2 CONSTITUTION** | Re-key a group *without* its participation (lost custodian, sovereign exit); add, remove or re-label atoms; add a family; widen any table or safety envelope; counter reset; debug enable; RMA, decommission, reactivation | Recoverable default (1,2); fortress option (2,1); remote (1,1) restricted | Rule changes and recovery are the paths to full control (Theorem 3) |
+| **T2 CONSTITUTION** | Re-key a group *without* its participation (lost custodian, sovereign exit), except that installing into a still-ACTIVE slot requires that slot holder's co-signature (REQ-LIFE-02, ADR-015); add, remove or re-label atoms; add a family; widen any table or safety envelope; counter reset; debug enable; RMA, decommission, reactivation | Recoverable default (1,2); fortress option (2,1); remote (1,1) restricted | Rule changes and recovery are the paths to full control (Theorem 3) |
 
 **Default tables, terrestrial dual profile** (atoms: 0 OEM-1 H1, 1 OEM-2 H2, 2 OWN-1 H1, 3 OWN-2 H2, 4 ESC-1 H1, 5 ESC-2 H2, 6 PRES, 7 WIT; C = number of custody groups present, F = number of hash families present, K = number of custody atoms, p = presence, w = publicity). All are verified by `lint.py` [M].
 
@@ -39,14 +39,14 @@ Each device holds one 256-bit table per **tier**, stored together with its bitwi
 |---|---|---|---|
 | T0 | K ≥ 1 ∨ p | exempt | all sets except ∅ and {WIT}: popcount 254 |
 | T1 | (w ∧ C≥2 ∧ (F≥2 ∨ p)) ∨ (p ∧ C≥2 ∧ F≥2) | (1,1) incl. family and site | `0 · fffefafaffcceac0 · fffefafaffcceac0 · fffefffefffeeee0` (146 sets) |
-| T2 recoverable | p ∧ K≥2 ∧ (w ∨ C≥2), plus mandatory delay | (1,2) except both-families; not live after site loss (by design) | `0 · fffefffefffeeee0 · 0 · fffffffefffefee8` (111 sets) |
+| T2 recoverable | p ∧ K≥2 ∧ (w ∨ C≥2), plus mandatory delay | (1,2) except both-families, only if no custody group controls the site (F-R2-04, REQ-LINT-03); not live after site loss (by design) | `0 · fffefffefffeeee0 · 0 · fffffffefffefee8` (111 sets) |
 | T2 fortress | p ∧ F≥2 ∧ ((C≥2 ∧ w) ∨ C≥3) | (2,1) key/group loss | `0 · eee0eae0eec00000 · 0 · fffefafaffcceac0` (71 sets) |
 
 Read T1 this way. Normally, two custody groups using both hash families, with publication. If one family is lost, two groups plus a person at the device, with publication. If the logs are down, two groups, both families and presence. T2 recoverable requires someone physically present plus two custody keys, published, after a delay. So a site whose OEM and escrow agent have both vanished can still re-key, and a remote attacker holding any one group's keys cannot.
 
 **Remote profile** (no presence atom): T1 = w ∧ C≥2 ∧ F≥2 (1,1 for keys and groups; not live after a family loss). T2 = w ∧ C≥3 ∧ (≥2 groups contribute SHA-2 atoms) ∧ (≥2 groups contribute Keccak atoms). This is safe against any two faults except both families, and live after one key loss. Re-keying a lost group must sit at T1 for liveness, so the remote effective budget for full control is (1,1) (Theorem 3).
 
-**Nano profile** (one family): T1 = w ∧ C≥2 (safe against a key or group, *not* against a hash break). T2 = p ∧ K≥1 ∧ w: safe against one fault *including* a hash break, live after two group losses, and two-fault-unsafe (a site insider plus any custodian). Verified [M].
+**Nano profile** (one family): T1 = w ∧ C≥2 (safe against a key or group, *not* against a hash break). T2 = p ∧ K≥1 ∧ w: safe against one fault *including* a hash break, live after two group losses, and two-fault-unsafe (a site insider plus any custodian; one fault if a custody group controls the site, F-R2-04). Verified [M].
 
 **Renewal invariant (D-31).** After any loss or retirement, the lint reports whether each tier still meets its budget. Below budget, the fleet is *degraded* and must renew: appoint a replacement custodian, install a new family, or replace a log. Example [M]: after a sovereign exit retires the OEM atoms, T1 remains single-fault safe but is no longer live after a further group loss until a third custodian is appointed.
 
@@ -153,7 +153,7 @@ The waist changes only by a new major version. A device built against waist v1 i
 |---|---|---|
 | **Evidence** with labels (count signatures instead of classes) | Shared-assumption collapse: plain 2-of-3 lets one Keccak break forge two "independent" signatures | `quorum.py` (stream A) [M]; κ model 0.5249% vs 0.0274% [M, model] |
 | **Rule** with on-device admission (trust host tools) | A compromised compiler or a misleading summary produces an unsafe table that a valid quorum signs (G14). Tightening into a lockout goes unnoticed (G13) | Red-team: 22.6–32.4% of tables that pass weaker checks are breakable or non-live [M, n=5] |
-| **Record** (monotone, chained) | Rollback and replay of authority (G11); no catch-up for stale devices (G10); no audit (G21) | TLA+ base model, 13.5M states, no violation [M, bounded] |
+| **Record** (monotone, chained) | Rollback and replay of authority (G11); no catch-up for stale devices (G10); no audit (G21) | TLA+ base model: run not completed, see GATE-08 |
 | **Effect** (stage, publish, delay, halt) | All-at-once failures: staging alone does nothing (2.31% vs 2.32% devices out), auto-halt cuts it to 0.15% [M, synthetic twin]; covert targeted changes (G9) | `migration_twin.py` [M] |
 | **The waist** | Every port re-implements authority semantics; atlas R9/R10 side doors and agility atrophy | Architecture scoring S 4.48 vs best alternative 4.20 [M, judgement weights] |
 

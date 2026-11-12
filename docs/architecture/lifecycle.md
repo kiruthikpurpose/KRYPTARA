@@ -1,7 +1,7 @@
 <!-- Title: Lifecycle from manufacture to resurrection -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L3. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 7. The lifecycle, from manufacture to resurrection
 
@@ -56,7 +56,7 @@ sequenceDiagram
 
 ### 7.4 Key compromise and rotation
 
-A stolen key alone authorises nothing above HALT, so the worst it can do is spend its halt budget. The holder rotates with `ROTATE_KEY`: the T1 evidence plus a continuity signature from the outgoing key. If the key was *lost* rather than stolen, the continuity signature is impossible, so the group is re-keyed without its participation. That is `REKEY_GROUP` at T2 in terrestrial profiles, or T1 in remote ones.
+A stolen key alone authorises nothing above HALT, so the worst it can do is spend its halt budget. The holder rotates with `ROTATE_KEY`: the T1 evidence plus a continuity signature from the outgoing key. If the key was *lost* rather than stolen, the continuity signature is impossible, so the group is re-keyed without its participation, except that installing into a still-ACTIVE slot requires that slot holder's co-signature (REQ-LIFE-02, ADR-015). That is `REKEY_GROUP` at T2 in terrestrial profiles, or T1 in remote ones.
 
 ### 7.5 Ownership transfer
 
@@ -90,7 +90,7 @@ A remote profile cannot do the presence steps. After a family break it either fr
 
 ### 7.8 Two custodians are lost
 
-The OEM went bankrupt and the escrow agent dissolved, so only the owner's two keys remain. T1 is unsatisfiable, since it needs two groups. T2 recoverable is satisfiable: presence plus the owner's two keys, published, after the delay. The owner re-keys the two lost groups to new custodians, and budgets are restored. The cost of this liveness is that a site insider colluding with one custodian could do the same. That is a two-fault event, and it is publicly logged and delayed (Theorem 3). Fleets that prefer the opposite trade choose the fortress constitution (C-14) and accept frozen governance after two losses.
+The OEM went bankrupt and the escrow agent dissolved, so only the owner's two keys remain. T1 is unsatisfiable, since it needs two groups. T2 recoverable is satisfiable: presence plus the owner's two keys, published, after the delay. The owner re-keys the two lost groups to new custodians, and budgets are restored. The cost of this liveness is that a site insider colluding with one custodian could do the same. That is a two-fault event only if the owner does not control the site; an owner who controls the site satisfies recoverable T2 alone (F-R2-04), which REQ-LINT-03 and REQ-PRES-02 exist to catch. Either way it is publicly logged and delayed (Theorem 3). Fleets that prefer the opposite trade choose the fortress constitution (C-14) and accept frozen governance after two losses.
 
 ### 7.9 A device wakes after twelve years
 

@@ -1,0 +1,31 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 88 and seed 5913191117194719341 with 2 workers on 12 cores with 1333MB heap and 64MB offheap memory [pid: 731910] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
+Parsing file /tmp/Integers.tla
+Parsing file /tmp/FiniteSets.tla
+Parsing file /tmp/TLC.tla
+Parsing file /tmp/Naturals.tla
+Parsing file /tmp/Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module FirstStage
+Starting... (2026-11-12 16:53:18)
+Computing initial states...
+Computed 2 initial states...
+Computed 4 initial states...
+Computed 8 initial states...
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 16:53:19.
+Progress(8) at 2026-11-12 16:53:22: 717,957 states generated (717,957 s/min), 272,632 distinct states found (272,632 ds/min), 146,548 states left on queue.
+Progress(22) at 2026-11-12 16:54:22: 31,272,528 states generated (30,554,571 s/min), 7,682,332 distinct states found (7,409,700 ds/min), 394,723 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.3E-5
+  based on the actual fingerprints:  val = 1.6E-6
+35618547 states generated, 8544995 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 35.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 31 and the 95th percentile is 2).
+Finished in 01min 12s at (2026-11-12 16:54:30)

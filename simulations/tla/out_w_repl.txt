@@ -1,5 +1,5 @@
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 126 and seed 569846099255179430 with 2 workers on 12 cores with 1067MB heap and 64MB offheap memory [pid: 541039] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Running breadth-first search Model-Checking with fp 28 and seed 462671675733285344 with 2 workers on 12 cores with 1333MB heap and 64MB offheap memory [pid: 731626] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
 Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
 Parsing file /tmp/Integers.tla
 Parsing file /tmp/FiniteSets.tla
@@ -12,12 +12,12 @@ Semantic processing of module Sequences
 Semantic processing of module FiniteSets
 Semantic processing of module TLC
 Semantic processing of module FirstStage
-Starting... (2026-11-12 08:23:53)
+Starting... (2026-11-12 16:52:32)
 Computing initial states...
 Computed 2 initial states...
 Computed 4 initial states...
 Computed 8 initial states...
-Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 08:23:54.
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 16:52:32.
 Error: Invariant Inv_NeverRepl is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -47,14 +47,14 @@ State 1: <Initial predicate>
   pr |-> FALSE,
   hn |-> FALSE,
   tf |-> 0 ]
-/\ fk = 1
+/\ fk = 0
 /\ nreq = 0
 /\ run = 0
 /\ anergic = {}
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 2: <HonestDeposit line 175, col 3 to line 178, col 131 of module FirstStage>
+State 2: <HonestDeposit line 177, col 3 to line 180, col 131 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
@@ -81,14 +81,14 @@ State 2: <HonestDeposit line 175, col 3 to line 178, col 131 of module FirstStag
   pr |-> FALSE,
   hn |-> TRUE,
   tf |-> 0 ]
-/\ fk = 1
+/\ fk = 0
 /\ nreq = 1
 /\ run = 0
 /\ anergic = {}
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 3: <ApplyReq line 215, col 3 to line 233, col 129 of module FirstStage>
+State 3: <ApplyReq line 217, col 3 to line 235, col 129 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
@@ -115,14 +115,14 @@ State 3: <ApplyReq line 215, col 3 to line 233, col 129 of module FirstStage>
   pr |-> FALSE,
   hn |-> FALSE,
   tf |-> 0 ]
-/\ fk = 1
+/\ fk = 0
 /\ nreq = 1
 /\ run = 0
 /\ anergic = {}
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-20953 states generated, 8057 distinct states found, 6909 states left on queue.
+16327 states generated, 8054 distinct states found, 7248 states left on queue.
 The depth of the complete state graph search is 3.
 The average outdegree of the complete state graph is 0 (minimum is 0, the maximum 31 and the 95th percentile is 0).
-Finished in 00s at (2026-11-12 08:23:54)
+Finished in 01s at (2026-11-12 16:52:33)

@@ -1,7 +1,7 @@
 <!-- Title: Mechanisms in depth -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L2. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 6. Mechanisms in depth
 
@@ -29,7 +29,7 @@
 | `TIGHTEN_TABLE` | T1 | tier, new table | Device checks new ≤ old and new ≥ Lo |
 | `DECLARE_CLASS_DEAD` | T1 | label bit | Tightening; lint reports any budget shortfall; a canary trip (C-12) may perform it automatically for classical families |
 | `CLAIM` | T1 under factory atoms (OEM + ESC, both families, published), or T2 at site (presence + two custody atoms) | first owner's key hashes | Escrow-assisted claim at site rescues unclaimed devices of a dead OEM |
-| `REKEY_GROUP` | T2 (terrestrial); T1 (remote) | group, new key hashes | Recovery from a lost custodian |
+| `REKEY_GROUP` | T2 (terrestrial); T1 (remote) | group, new key hashes | Recovery from a lost custodian; installing into a still-ACTIVE slot requires that slot holder's co-signature (REQ-LIFE-02, ADR-015) |
 | `SOVEREIGN_EXIT` | T2 (terrestrial); T1 (remote) | retire OEM atoms | OWNER + ESCROW, OEM excluded; renewal invariant then asks for a third custodian |
 | `ADD_ATOM`, `RELABEL`, `ADD_FAMILY` | T2 | atom descriptors | Labels from ceremony records, logged |
 | `WIDEN_TABLE` | T2 | tier, new table | Device checks new ≤ U |
@@ -44,20 +44,28 @@
 ### 6.3 Admission: the algorithm and its cost
 
 ```c
-/* From code/G/policy8.c (682 B (Rev 4; now 902 B hardened, see CHANGELOG) Thumb on Cortex-M0+, -Os; worst stack ~88 B) */
-int ac_tbl_monotone(const ac_tbl_t *t);                       /* 256 x 8 edge checks */
-unsigned ac_faults_from_labels(uint8_t *out, unsigned cap, const uint16_t lab[8],
-                               uint8_t present, uint8_t singles, uint16_t label_filter);
-void ac_tbl_upper(ac_tbl_t *U, const uint8_t *f, unsigned nf, unsigned k, uint8_t expo,   const uint16_t *excl);
-void ac_tbl_lower(ac_tbl_t *L, const uint8_t *f, unsigned nf, unsigned k, uint8_t absent, const uint16_t *excl);
-int ac_tbl_within (const ac_tbl_t *t, const ac_tbl_t *U, const ac_tbl_t *L);   /* (t & ~U) | (L & ~t) == 0 */
-int ac_tbl_tighten(const ac_tbl_t *n, const ac_tbl_t *o);                      /* (n & ~o) == 0 */
-int ac_tbl_authorises(const ac_tbl_t *t, uint8_t evidence_set);                /* table lookup */
+/* Admission core of src/policy8.c (signatures as of 2026-11-12; M0+ size unmeasured since the
+ * additions below, see CLM-07). Error returns: -1 malformed input, -2 unsatisfiable budget. */
+int  ac_tbl_monotone(const ac_tbl_t *t);                                   /* 256 x 8 edge checks */
+int  ac_faults_from_labels(uint8_t *out, unsigned cap, const uint32_t lab[8],
+                           uint8_t present, uint8_t singles, uint32_t label_filter);
+int  ac_tbl_upper(ac_tbl_t *U, const uint8_t *f, unsigned nf, unsigned k, uint8_t expo,   const uint32_t *excl);
+int  ac_tbl_lower(ac_tbl_t *L, const uint8_t *f, unsigned nf, unsigned k, uint8_t absent, const uint32_t *excl);
+int  ac_tbl_within (const ac_tbl_t *t, const ac_tbl_t *U, const ac_tbl_t *L);  /* (t & ~U) | (L & ~t) == 0 */
+int  ac_tbl_tighten(const ac_tbl_t *n, const ac_tbl_t *o);                     /* (n & ~o) == 0 */
+void ac_tbl_project(ac_tbl_t *out, const ac_tbl_t *t, uint8_t present);        /* REQ-ADM-05 */
+int  ac_tbl_is_projected(const ac_tbl_t *t, uint8_t present);
+int  ac_tbl_authorises(const ac_tbl_t *t, uint8_t evidence_set);               /* table lookup */
+/* Added after R2: */
+int  ac_tbl_dual_authorises(const ac_tbl_dual_t *d, uint8_t S);                /* REQ-NV-01 */
+int  ac_key_install_authorised(const ac_tbl_t *t, uint8_t S, uint8_t holder_atom, int active); /* REQ-LIFE-02 */
+int  ac_no_duplicate_keys(const uint8_t kind[8], const ac_key_hash_t key[8], uint8_t present); /* REQ-EVD-03 */
+void ac_derive_labels(uint32_t out[8], const uint8_t provider[8], const uint32_t declared[8], uint8_t present); /* REQ-EVD-02 */
 ```
 
 * **Where it runs.** Admission runs when a T1 or T2 transition installs or changes a table, labels or atoms. Authorisation at use time is a single table lookup on the evidence bitmap, done twice with complementary encodings (D-20b) against the table and its stored complement.
 * **Cost [E].** Computing U for 2-fault budgets with 12 fault classes is 256 × 66 pair tests ≈ 1.7 × 10⁵ simple operations, about 3–10 ms at 64 MHz on M0+. That is negligible against one LMS verification (≈ 42 ms [E]). EXP-19 measures it.
-* **Correctness evidence [M].** The C code matched an independent Python reference on 3,000 random label structures and tables, covering k = 0, 1, 2, exposure atoms, absent atoms and random non-monotone tables, with 0 mismatches. CBMC bounded proofs and a Lean or Isabelle proof of Theorem 1 are Phase 0 work (EXP-10).
+* **Correctness evidence [M].** The C code matched an independent Python reference on 3,000 random label structures and tables, covering k = 0, 1, 2, exposure atoms, absent atoms and random non-monotone tables, with 0 mismatches. Mutation testing kills all 46 detectable mutants of `src/policy8.c` (CLM-40), and a 200,000-input fuzz run under ASan/UBSan finds nothing (CLM-35). CBMC bounded proofs and a Lean or Isabelle proof of Theorem 1 are Phase 0 work (EXP-10).
 
 ### 6.4 The presence atom
 
@@ -70,7 +78,7 @@ Presence is the only evidence whose cost to an attacker **scales with the number
 4. Presence is per device and per transition. The `ac_tx` commits to `presence_required`, and the commit records that presence was sampled.
 5. Presence domains are labelled by site, so two devices at one site share a site class.
 
-**Limits [I].** Presence does not authenticate *who* is present. The class it represents is "anyone with physical access to this site", including insiders, contractors and paid remote-hands services. Supply-chain implants that assert the line are a hardware-trust problem shared with every physical control. The design therefore never lets presence act alone: T2 always needs custody atoms as well.
+**Limits [I].** Presence does not authenticate *who* is present. The class it represents is "anyone with physical access to this site", including insiders, contractors and paid remote-hands services. Supply-chain implants that assert the line are a hardware-trust problem shared with every physical control. The design therefore never lets presence act alone: T2 always needs custody atoms as well. That is not a second fault if the custody group supplying them also controls the site (F-R2-04, REQ-LINT-03, REQ-PRES-02).
 
 ### 6.5 The publicity atom
 

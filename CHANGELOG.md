@@ -105,3 +105,40 @@ Closes out next-work items 4 and 5, and clears every remaining non-hardware "not
   `.github/workflows/gate-08-tla.yml`), REQ-PRES-01 and silicon measurements (EXP-19, E-A1 — no MCU
   hardware available), and the 148 gap-candidate legacy requirements (need human judgment, not a
   script).
+
+## 2026-11-12: kernel in C, TLA+ reduced model passes, R2 review of sliced docs, lost-holder rule
+- **Kernel (items 12, 13, 16):** `src/kernel.c` adds a tier engine over complement-stored tables,
+  an action-to-tier table, the image-commit boot check (`ac_image_bootable`) and the chain hash.
+  `models/kernel_check.py`: the C engine matches the reference tables for 7 actions x 256 evidence
+  sets; 2,048 injected single-bit flips widen nothing and are all detected; C and Python chain
+  hashes agree on 503 vectors (CLM-53, CLM-54). The chain hash now length-prefixes its domain tag.
+- **Power-cut sweep (items 14, 19):** the existing journal prototype survives 72,816 injected cuts
+  (CLM-55). Too slow for the main suite; moved to `scripts/run_slow_checks.sh` and a CI job.
+- **TLA+ (items 21, 22):** the holder co-signature rule is now switchable (`HolderCoSign`) and has
+  its own invariant (`Inv_HolderConsent`). A reduced configuration (one request) completes with no
+  violation; removing the rule is caught at once (GATE-08r, CLM-61). Mutations M4 and M6 are not
+  caught at that size. At MaxReq = 2 with a 7-minute cap each (2026-11-12), M4 and M6 were still not caught (about 35M and 26M distinct states), but the reachability witness `w_reach2` also found no second floor advance within the same cap (about 28M distinct states, BFS depth 12). The search therefore never reached the depth where M4/M6 could show, so their survival is inconclusive, not evidence that the guards are unnecessary. Configs `simulations/tla/cfg_m4b_nocap2`, `simulations/tla/cfg_m6b_nopam2`, `simulations/tla/cfg_w_reach2` are kept for a longer run on the GitHub runner. GATE-08 itself (base constants) is still not passed. `run.sh` now writes
+  TLC state to a temporary directory and accepts a time cap.
+- **Rust twin (items 13, 28):** `.github/workflows/rust-twin.yml` runs the existing Rust vs C
+  differential tests on GitHub. Not yet run.
+- **Hash-family independence (item 42):** `docs/research/hash-family-independence.md`. CLM-11
+  reduced to structural breaks of one primitive. Under a shared break, terrestrial T2 and nano
+  with presence stay safe; terrestrial T1 and the whole remote profile do not (CLM-56).
+- **PQC migration (item 45):** `models/pqc_migration.py` and
+  `docs/applications/pqc-migration-profile.md`. Swap one group's key at a time; retiring the old
+  class first leaves every tier below budget for two years (CLM-57).
+- **TUF mapping (item 36):** `models/tuf_mapping.py` (CLM-59). It exposed a bug in
+  `models/lint.py`: for layouts with fewer than 8 atoms, unused bit positions were neither
+  compromised nor lost, so `exists` was too optimistic. Fixed by treating them as absent; ten
+  dependent scripts produce identical output before and after (CLM-58).
+- **Standards mapping (items 35, 37, 38):** `docs/research/standards-mapping.md`, with a worked
+  ownership transfer. Only the TUF and RFC 9162 rows have executable checks.
+- **R2 review of the 18 sliced documents (item 49):** 34 conflicting passages corrected in place
+  (absent atoms, projection, holder co-signature, correlated presence, stale sizes and paths);
+  the "Rev 4 predates R2" banner is replaced by a reviewed-on note in all 18 files.
+- **OQ-12, lost holder:** the review found that REQ-LIFE-02 left no way to re-key a slot whose
+  holder lost the key. Proposed answer, ADR-040: retire the slot at T1, then install at T2 into
+  the empty slot. `models/lost_holder.py` (CLM-60) shows it adds no shorter attack path and stays
+  live after any single group loss (terrestrial profile).
+- **GATE-07** was still marked "Passed (902 B)" although the figure is stale; now "Unknown,
+  re-measure" (OQ-13).

@@ -54,4 +54,7 @@ cp "$BUILD/kernel_test" models/kernel_test; (cd models && python3 kernel_check.p
 echo "== [31] first-stage prototype vectors (src/prototypes, test_core)"
 gcc -O2 -o "$BUILD/proto_core" src/prototypes/test/test_core.c src/prototypes/c/fs_core.c src/prototypes/c/fs_quorum.c src/prototypes/c/lms.c src/prototypes/c/sha256.c
 "$BUILD/proto_core" src/prototypes/test/vectors.txt | tail -1
+echo "== [32] PQC migration as class retirement, two schedules (models/pqc_migration.py)"; (cd models && python3 pqc_migration.py | tail -5)
+echo "== [33] TUF threshold roles under label-aware analysis (models/tuf_mapping.py)"; (cd models && python3 tuf_mapping.py)
+echo "== [34] OQ-12/ADR-040: re-keying a slot whose holder is lost (models/lost_holder.py)"; (cd models && python3 lost_holder.py)
 echo "ALL CHECKS COMPLETED"

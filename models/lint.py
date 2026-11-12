@@ -27,6 +27,10 @@ def structures(atoms, present, t, s, comp_labels=None, loss_labels=None, exclude
     absent = 0
     for i, a in enumerate(atoms):
         if a.name not in present: absent |= 1 << i
+    # Bit positions beyond the declared layout are atoms that do not exist on the device: by F-R2-01
+    # they are absent (compromised and lost). Without this, a layout with fewer than N atoms leaves
+    # phantom bits that no fault can cover, and the existence check (Lo <= U) is too optimistic.
+    for i in range(len(atoms), N): absent |= 1 << i
     expo = sum(1 << i for i, a in enumerate(atoms) if a.kind == "WIT" and a.name in present)
     pres_bit = sum(1 << i for i, a in enumerate(atoms) if a.kind == "PRES" and a.name in present)
     ctrl_bit = sum(1 << i for i, a in enumerate(atoms)

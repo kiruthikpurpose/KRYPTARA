@@ -13,3 +13,5 @@
 | OQ-09 | Does anything justify the broader "paradigm" scope? | No evidence |
 | OQ-10 | Rev 4 text still says 682 B in places? | Banner and corrections applied to slices; sources unchanged |
 | OQ-11 | Stack usage of hardened admission code | Not re-measured |
+| OQ-12 | REQ-LIFE-02 requires the current holder to co-sign any key installed into an ACTIVE slot. If the holder has lost the key, can the slot be re-keyed at all? Candidate answers: retire the slot first (a T1 tightening) and install into the now-empty slot, or let the T2 RECOVERY tier override the co-signature. **Proposed answer: retire first, then install (ADR-040), checked by `models/lost_holder.py`; not in the TLA+ model.** | Found during the R2 review of sliced documents (2026-11-12); affects lifecycle §7.4/§7.8, problem-mapping G5, D-05 |
+| OQ-13 | Has the 50-item completion plan's GATE-07 size budget survived the functions added to `src/policy8.c` since 902 B was measured? | Answered by the first CI run of step [7] |

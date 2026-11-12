@@ -1,7 +1,7 @@
 <!-- Title: System architecture -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L2. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 5. System architecture
 
@@ -128,8 +128,8 @@ The bold boundary is the locked stage. Everything to its left is advisory or unt
 
 | Profile | Hash families in locked stage | Presence | Default T1 | Default T2 | Effective full-control budget | Typical devices |
 |---|---|---|---|---|---|---|
-| **dual-terrestrial** (reference) | SHA-256 + SHAKE256 | yes | (1,1) incl. family and site | recoverable (1,2) or fortress (2,1) | (1,2) or (2,1) | PLCs, relays, RTUs, meters, vehicles, implants (programmer wand = presence) |
-| **nano-terrestrial** | SHA-256 | yes | (1,1) excl. hash break | (1,2) incl. hash break | (1,2), but routine T1 is exposed to a SHA-256 break | Small, slow parts where Keccak cost bites (C-01 fails) |
+| **dual-terrestrial** (reference) | SHA-256 + SHAKE256 | yes | (1,1) incl. family and site | recoverable (1,2), only if no custody group controls the site (F-R2-04), or fortress (2,1) | (1,2) or (2,1) | PLCs, relays, RTUs, meters, vehicles, implants (programmer wand = presence) |
+| **nano-terrestrial** | SHA-256 | yes | (1,1) excl. hash break | (1,2) incl. hash break, only if no custody group controls the site (F-R2-04) | (1,2), but routine T1 is exposed to a SHA-256 break | Small, slow parts where Keccak cost bites (C-01 fails) |
 | **dual-remote** | SHA-256 + SHAKE256 | no | (1,1) keys and groups | restricted; re-key at T1 | (1,1); frozen after a family loss unless degraded mode or a third class (C-16) | Satellites, sealed or buried assets |
 | **nano-remote** | SHA-256 | no | (1,1) excl. hash break | — | (1,1) excl. hash break | Disposable or short-life sensors only |
 

@@ -1,7 +1,7 @@
 <!-- Title: Mathematical foundations: the theory of governed change -->
 > **Provenance.** Sliced from legacy Rev 4 (`research-archive/legacy-blueprints/L5_Blueprint_Rev4_monolith.md`, matching sections).
 > Document level: L2. Evidence labels: [P] proved, [M] machine-checked or measured by a script in this repo, [E] estimate, [S] standard/literature, [H] hypothesis.
-> Rev 4 predates the R2 red-team fixes: absent atoms count as compromised and lost, tables must be projection-canonical, a slot holder must co-sign key installation, and presence can be correlated with ownership (see `docs/theory/red-team-r2-findings.md`). Where this text conflicts with those, the R2 document wins.
+> Reviewed against the R2 red-team findings on 2026-11-12; conflicting passages were corrected in place (see CHANGELOG).
 
 # 3. The theory of governed change
 
@@ -37,7 +37,7 @@ A **fault budget** (t, s) says a tier must remain *safe* when any t classes are 
 
 From the labels the device builds:
 
-* the **compromise structure** 𝒜c: every union of t compromise classes, *plus every exposure atom*, because an attacker can always get a transition logged: publication is not consent;
+* the **compromise structure** 𝒜c: every union of t compromise classes, *plus every exposure atom*, because an attacker can always get a transition logged: publication is not consent; *plus every absent atom*, which counts as compromised as well as lost (ADR-014, REQ-ADM-03);
 * the **loss structure** 𝒜l: every union of s loss classes, *plus every absent atom*, because an atom that does not exist on this device is permanently lost.
 
 Let P be the set of all atoms. A **policy** is a monotone Boolean function f on subsets of P: adding evidence never removes authority. f(S) = 1 means the evidence set S authorises.
@@ -58,10 +58,10 @@ Let P be the set of all atoms. A **policy** is a monotone Boolean function f on 
 **Proof.** (i) If f is safe and f(S) = 1 with S ⊆ A for some A ∈ 𝒜c, monotonicity gives f(A) = 1, a contradiction; so f(S) = 1 ⇒ U(S) = 1. Conversely, f ≤ U and U(A) = 0 give f(A) = 0. (ii) If f is live and S ⊇ P∖L, monotonicity gives f(S) ≥ f(P∖L) = 1; so Lo ≤ f. Conversely, Lo(P∖L) = 1 ≤ f(P∖L). (iii) follows from (i) and (ii); U and Lo are themselves monotone. (iv) The interval is non-empty iff Lo ≤ U. Lo is the upward closure of the sets P∖L, so this holds iff U(P∖L) = 1 for every L, i.e. iff P∖L ⊄ A for all A, L, i.e. iff A ∪ L ≠ P. ∎
 
 **Corollaries.**
-* *Admission is two bitwise comparisons.* Given U and Lo, a candidate table f is admissible iff `monotone(f) && (f & ~U) == 0 && (Lo & ~f) == 0`. A tightening update f_new from f_old additionally needs `(f_new & ~f_old) == 0`. Tightening never breaks safety. It breaks liveness only by leaving the interval, which the check catches.
+* *Admission is two bitwise comparisons.* Given U and Lo, a candidate table f is admissible iff `monotone(f) && (f & ~U) == 0 && (Lo & ~f) == 0`. A tightening update f_new from f_old additionally needs `(f_new & ~f_old) == 0`. A stored table must also equal its projection onto present atoms, f(S) = f(S ∩ present) (REQ-ADM-05). Tightening never breaks safety. It breaks liveness only by leaving the interval, which the check catches.
 * *Mandatory evidence is an upper bound.* Requiring atom W ("must be published") is the constraint f ≤ x_W, so the admissible set remains an interval: [Lo, U ∧ x_W]. Every property we need (safety, liveness, mandatory atoms, tighten-only) is either an upper or a lower bound. This is why one tiny check covers all of them.
 
-**Verification [M].** On 1,050 randomly generated compromise and loss structures over 3–5 atoms, exhaustively over all monotone functions (168 for 4 atoms, 7,581 for 5), the brute-force safe-and-live set equalled the predicted interval and existence equalled the mixed Q² condition in every case (`code/G/interval.py`). The earlier 6-slot results are reproduced as interval sizes. Over all 7,828,354 monotone functions on six slots, 4,778,188 are safe and live under slot and group faults. Adding hash-family compromise gives 1,227,427. Adding hash-family loss gives 0.
+**Verification [M].** On 1,050 randomly generated compromise and loss structures over 3–5 atoms, exhaustively over all monotone functions (168 for 4 atoms, 7,581 for 5), the brute-force safe-and-live set equalled the predicted interval and existence equalled the mixed Q² condition in every case (`models/interval.py`). Theorem 1 is additionally checked exhaustively for n = 3 and 4 (CLM-36) and, for four concrete instances, by Z3 (CLM-37). The earlier 6-slot results are reproduced as interval sizes. Over all 7,828,354 monotone functions on six slots, 4,778,188 are safe and live under slot and group faults. Adding hash-family compromise gives 1,227,427. Adding hash-family loss gives 0.
 
 **Worked example.** Take six signature slots: OEM-1 (SHA-2), OEM-2 (Keccak), OWN-1, OWN-2, ESC-1, ESC-2, alternating families. With compromise classes {slot, group, family}, U = `0xfffefafaffcceac0`. This is exactly the rule "two signers from different groups *and* different families", the rule the project used informally since Rev 2. The theorem shows it is the *most permissive* safe policy, not merely a safe one, and that it cannot be live after a family loss.
 
@@ -79,7 +79,7 @@ Let P be the set of all atoms. A **policy** is a monotone Boolean function f on 
 | Three custody groups | 3 | (1,1) | The minimum for single-fault-safe *and* single-loss-live authority |
 | Two hash families as both compromise and loss classes | 2 | (1,0) | Safe against one break, frozen after it; or live after one break, forgeable by it |
 | Two hash families + physical presence | 3 | (1,1) | Safe against one break *and* live after one break |
-| Three custody groups + presence (terrestrial) | 4 | (1,2) or (2,1) | Recoverable *or* fortress, not both |
+| Three custody groups + presence (terrestrial) | 4 | (1,2) or (2,1) | Recoverable *or* fortress, not both. Presence is a fourth class only if no custody group controls the site (F-R2-04, REQ-LINT-03) |
 | Three custody groups, no presence (remote) | 3 | (1,1) | No double-loss recovery that is also single-fault safe |
 
 When classes cross-cut, such as groups × families, there is no simple partition and Theorem 1 is the exact tool. The lint computes the interval directly from labels (§6.3). Theorem 2 is the rule of thumb for design.
@@ -96,7 +96,7 @@ Call a transition sequence a **path to full control** if it ends in a state wher
 
 ### 3.6 What no policy can do: the impossibility catalogue [M]
 
-Each row was computed with the label-driven lint (`code/G/lint.py`) on the reference layouts. "Impossible" means the interval [Lo, U] is empty: *no* policy exists, so no cleverness in the policy language can help.
+Each row was computed with the label-driven lint (`models/lint.py`) on the reference layouts. "Impossible" means the interval [Lo, U] is empty: *no* policy exists, so no cleverness in the policy language can help.
 
 | # | Profile and requirement | Result | Design consequence |
 |---|---|---|---|
@@ -136,7 +136,7 @@ A transparency log with witnesses guarantees that the checkpoints a device sees 
 | One-way functions suffice for signatures (Rompel, STOC 1990) | The minimal cryptographic root is a one-way function | [F] |
 | TUF 1.0.37, Uptane 2.1.0 | Threshold roles, chained root rotation, rollback counters | [F] fetched by prior-art review |
 
-**What is plausibly new [N]** is the composition, not the mathematics. It has four parts. (1) The device itself derives the adversary structure from labels that mix parties, assumptions, places and publicity, and admits only policies inside [Lo, U]. (2) The diversity-budget method assigns each power exactly one (t, s) budget and treats the weakest full-control path as the security level. (3) Physical presence is a first-class, non-cryptographic evidence class that restores safety and liveness under a hash-family loss. (4) There is an impossibility catalogue for device governance (§3.6). Limited searches found none of these combined; patents were not searched. "Not found" is weaker than "does not exist".
+**What is plausibly new [N]** is the composition, not the mathematics. It has four parts. (1) The device itself derives the adversary structure from labels that mix parties, assumptions, places and publicity, and admits only policies inside [Lo, U]. (2) The diversity-budget method assigns each power exactly one (t, s) budget and treats the weakest full-control path as the security level. (3) Physical presence is a first-class, non-cryptographic evidence class that restores safety and liveness under a hash-family loss, provided it is not controlled by a custody group (F-R2-04). (4) There is an impossibility catalogue for device governance (§3.6). Limited searches found none of these combined; patents were not searched. "Not found" is weaker than "does not exist".
 
 ---
 
