@@ -142,3 +142,17 @@ Closes out next-work items 4 and 5, and clears every remaining non-hardware "not
   live after any single group loss (terrestrial profile).
 - **GATE-07** was still marked "Passed (902 B)" although the figure is stale; now "Unknown,
   re-measure" (OQ-13).
+- **Lost escrow key (OQ-14, follow-up to ADR-040):** TLA+ switch `EscLost` added. With three requests
+  (enough to revoke both key generations and then replace), the escrow slot can be replaced only
+  if the PAM revocation rule is off; with it on, never (exhaustive, 11.8M states; CLM-63,
+  GATE-08e). A lost escrow key is unrecoverable in the first-stage design; ADR-040 stays Proposed
+  until OQ-14 is decided. Also: a two-request reduced model (`cfg_small2`) passes all invariants
+  over 27.6M states (GATE-08s, CLM-62); `models/lost_holder.py` part 3 asserts that the remote
+  profile cannot refill a slot after losing a whole custody group; mechanisms.md 6.3 listing
+  refreshed; legacy `code/X/rt.py` mapped to `tests/redteam_r2/rt_r1.py`.
+- **Citations verified (item 8):** every source in `docs/research/reproducibility-and-sources.md` was
+  fetched and compared with its claim (Crossref for DOIs behind bot checks). One was wrong: the
+  Syta et al. witness-cosigning link pointed to ePrint 2014/1004, which is CONIKS; corrected to the
+  IEEE S&P 2016 DOI. IR 8547's final status and 2030/2035 dates are now confirmed at csrc.nist.gov,
+  so the "trade press, re-verify" caveats were removed (CLM-14, CLM-57). Not checked: CNSA 2.0 PDF
+  (refuses automated access).

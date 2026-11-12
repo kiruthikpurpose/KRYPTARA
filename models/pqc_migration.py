@@ -1,8 +1,7 @@
 # PQC migration as class retirement: a worked schedule checked against the tier budgets. [C]
 # Starting point: three custody groups, each holding one classical (ECC) key and one hash-based
 # (H1) key. Target: each group's ECC key replaced by a second hash family (H2) before the classical
-# family's retirement date. NIST IR 8547 (final 2026-10-27, per secondary sources; re-verify against
-# the NIST page before citing) deprecates quantum-vulnerable public-key algorithms after 2030 and
+# family's retirement date. NIST IR 8547 (final 2026-10-27, confirmed on csrc.nist.gov on 2026-11-12) deprecates quantum-vulnerable public-key algorithms after 2030 and
 # disallows them after 2035; those two years are used as the label-retirement dates.
 # Two orders are compared at every step with the reference tables and budgets from lint.py:
 #   swap-in-place : replace one group's ECC key by an H2 key per step (holder co-signs, REQ-LIFE-02)

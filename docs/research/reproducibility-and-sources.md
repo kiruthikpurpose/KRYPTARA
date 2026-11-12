@@ -25,15 +25,15 @@ Paths are relative to the repository root.
 ### 21.2 Sources checked in this programme
 
 Standards and specifications:
-* NIST FIPS 204 (ML-DSA): https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf. SHAKE use confirmed.
-* NIST FIPS 205 (SLH-DSA): https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf. Exact per-function SHA-2 assignment not re-read.
+* NIST FIPS 204 (ML-DSA): <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf> (SHAKE use confirmed).
+* NIST FIPS 205 (SLH-DSA): <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf> Exact per-function SHA-2 assignment not re-read.
 * NIST SP 800-208 (LMS/XMSS incl. SHAKE256 sets): https://csrc.nist.gov/pubs/sp/800/208/final
-* NIST SP 800-230 (draft, 13 Apr 2026, additional SLH-DSA parameter sets): https://csrc.nist.gov/pubs/sp/800/230/ipd
+* NIST SP 800-230 ipd (13 Apr 2026, "Additional SLH-DSA Parameter Sets for Limited Signature Use Cases"; at most 2^24 signatures per key; comments closed 12 Jun 2026): https://csrc.nist.gov/pubs/sp/800/230/ipd
 * NIST SP 800-232 (Ascon, final 13 Aug 2025): https://csrc.nist.gov/pubs/sp/800/232/final
-* NIST IR 8547 (final 27 Oct 2026): https://csrc.nist.gov/pubs/ir/8547/final
-* FIPS 206 status (pqc-forum, Apr 2026): https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/1HXzjlMUU6Y
+* NIST IR 8547 (final 27 Oct 2026 per csrc.nist.gov; quantum-vulnerable algorithms deprecated after 2030, disallowed after 2035): https://csrc.nist.gov/pubs/ir/8547/final · PDF https://nvlpubs.nist.gov/nistpubs/ir/2026/NIST.IR.8547.pdf
+* FIPS 206 status (pqc-forum thread "FIPS 206 Status Update", opened 13 Oct 2025; replies to 13 Apr 2026): https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/1HXzjlMUU6Y
 * NSA CNSA 2.0 algorithms (secondary access): https://media.defense.gov/2025/May/30/2003728741/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS.PDF
-* RFC 9943 (SCITT): https://www.rfc-editor.org/rfc/rfc9943.html · RFC 9162 (CT 2.0): https://www.rfc-editor.org/rfc/rfc9162.html · RFC 4998: https://www.rfc-editor.org/info/rfc4998
+* RFC 9943 (SCITT): https://www.rfc-editor.org/rfc/rfc9943.html · RFC 9162 (CT 2.0, Experimental): https://www.rfc-editor.org/rfc/rfc9162.html · RFC 4998: https://www.rfc-editor.org/info/rfc4998
 * C2SP tlog-witness / checkpoint / cosignature: https://c2sp.org/tlog-witness · https://c2sp.org/tlog-checkpoint@v1.1.0 · https://c2sp.org/tlog-cosignature@v1.1.0 · Sigsum: https://www.sigsum.org/docs
 * TCG Physical Presence Interface: https://trustedcomputinggroup.org/resource/tcg-physical-presence-interface-specification/ · TPM 2.0 Library: https://trustedcomputinggroup.org/resource/tpm-library-specification/
 * TUF specification: https://theupdateframework.github.io/specification/latest/ · Uptane 2.1.0: https://uptane.org/papers/uptane-standard.2.1.0.pdf
@@ -43,7 +43,7 @@ Research literature:
 * Hirt & Maurer, J. Cryptology 13(1):31–60 (2000): https://doi.org/10.1007/s001459910003
 * Benaloh & Leichter, CRYPTO '88: https://link.springer.com/doi/10.1007/0-387-34799-2_3
 * Rompel, STOC 1990: https://www.doi.org/10.1145/100216.100269
-* Syta et al., IEEE S&P 2016 (witness cosigning): https://eprint.iacr.org/2014/1004
+* Syta et al., "Keeping Authorities 'Honest or Bust' with Decentralized Witness Cosigning", IEEE S&P 2016, pp. 526–545: https://doi.org/10.1109/SP.2016.38 (preprint https://arxiv.org/abs/1503.08768). Corrected 2026-11-12: the earlier link, ePrint 2014/1004, is CONIKS, not this paper
 * Kelsey, Lang & Lucks, Communications in Cryptology 2(2), 2025: https://csrc.nist.gov/pubs/journal/2025/07/turning-hash-based-signatures-into-distributed-sig/final
 * PRAWNS (ePrint 2026/2142): https://eprint.iacr.org/2026/2142 · One-round threshold XMSS/SPHINCS+ from FHE (ePrint 2026/2360): https://eprint.iacr.org/2026/2360
 * Buterin, weak subjectivity (25 Nov 2014): https://blog.ethereum.org/2014/11/25/proof-stake-learned-love-weak-subjectivity
@@ -57,3 +57,4 @@ Research literature:
 
 ---
 
+**Citation check (2026-11-12, item 8).** Every source above was fetched and compared with what this document says about it; DOIs behind publisher bot checks were checked against Crossref records. One citation was wrong (Syta et al., corrected above). Not checked: the CNSA 2.0 PDF (media.defense.gov refuses automated access; open it in a browser) and the ST application notes (no URL given). A third-party page repeating a claim was not accepted as verification of a NIST or IETF status.

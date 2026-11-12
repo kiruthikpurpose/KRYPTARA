@@ -1,10 +1,10 @@
 # PQC migration profile: migration as class retirement
 
-**Level:** L3 (application profile). **Date:** 2026-11-12. Evidence labels as in the evidence register. The worked schedule below is the output of `models/pqc_migration.py` [M]; the dates are policy inputs [S, secondary sources], not results.
+**Level:** L3 (application profile). **Date:** 2026-11-12. Evidence labels as in the evidence register. The worked schedule below is the output of `models/pqc_migration.py` [M]; the dates are policy inputs [S], not results.
 
 ## Dates used
 
-NIST IR 8547 (*Transition to Post-Quantum Cryptography Standards*) was reported final on 2026-10-27, deprecating quantum-vulnerable public-key algorithms after 2030 and disallowing them after 2035 [S, trade press, re-verify against the NIST publication page before citing]. In this project those two years become **label-retirement dates** for the classical family (ADR on D-31, ADR-011): after 2030 no new authority may depend on an ECC atom; after 2035 the class is dead.
+NIST IR 8547 (*Transition to Post-Quantum Cryptography Standards*) was published final on 2026-10-27, deprecating quantum-vulnerable public-key algorithms after 2030 and disallowing them after 2035 [S, confirmed on csrc.nist.gov and in the final PDF, 2026-11-12]. In this project those two years become **label-retirement dates** for the classical family (ADR on D-31, ADR-011): after 2030 no new authority may depend on an ECC atom; after 2035 the class is dead.
 
 ## The migration, in kernel terms
 
@@ -29,4 +29,4 @@ A migration is not an algorithm swap. It is two governed transitions, repeated p
 
 ## Limits
 
-Reference 8-atom layout only. No timing, no fleet logistics (see SIM-02, the migration twin), no hazard rates. The dates are policy inputs from secondary sources.
+Reference 8-atom layout only. No timing, no fleet logistics (see SIM-02, the migration twin), no hazard rates. The dates are policy inputs.
