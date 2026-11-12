@@ -9,7 +9,7 @@
 \* assumption set contains fa, or of slot fk. Attacker cannot forge physical presence.
 EXTENDS Integers, FiniteSets, TLC
 
-CONSTANTS MaxF, MaxReq, Rule, AnergyMode, CapGuard, ImgGuard, PamRule, MaxFail, Thresh
+CONSTANTS MaxF, MaxReq, Rule, AnergyMode, CapGuard, ImgGuard, PamRule, MaxFail, Thresh, HolderCoSign
 
 Slots  == 1..3
 Gens   == 0..MaxF
@@ -25,9 +25,9 @@ InitCls(s) == IF s = 1 THEN {"SHA2"} ELSE IF s = 2 THEN {"KECCAK"} ELSE {"LATTIC
 InitHas(s, g) == IF s = 2 THEN g <= MaxF - 1 ELSE TRUE   \* slot 2 has no key for the last generation
 
 VARIABLES floor, has, cls, strikes, anergic, journal, req, imgs, lkg,
-          pc, run, nreq, fa, fk, histAdv, histRev, histRepl
+          pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder
 vars == <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg,
-          pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+          pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 Img == [st : {"GOOD","TORN","EMPTY"}, sg : Slots, gn : Gens]
 GoodImg(s, g) == [st |-> "GOOD", sg |-> s, gn |-> g]
@@ -113,13 +113,14 @@ HasAfterRepl == [has EXCEPT ![3] = [g \in Gens |-> g = floor]]
 
 \* REQ-LIFE-02: installing a key into an ACTIVE slot requires that slot's own holder to co-sign
 \* (F-R2-03: otherwise an outside quorum could replace slot 3's key without slot 3's participation).
+\* HolderCoSign = FALSE is the mutation that removes the rule (cfg_m9_nocosign).
 \* "ACTIVE" = the slot currently holds a key usable at this floor; an already-revoked slot has
 \* no holder left to co-sign, so the requirement does not apply (it is not a live key install then).
 SlotActive(s) == \E g \in Gens : g >= floor /\ has[s][g]
 
 Repl3OK(r) ==
   /\ r.tf = floor /\ r.vo
-  /\ (SlotActive(Esc) => ValidSig(r.sg, Esc))   \* slot-holder co-signature on its own replacement
+  /\ ((HolderCoSign /\ SlotActive(Esc)) => ValidSig(r.sg, Esc))   \* slot-holder co-signature on its own replacement
   /\ \E s \in {1, 2} : ValidSig(r.sg, s)
        /\ (Rule = "TWOOF" \/ cls[s][r.sg[s]] \cap {"ECC"} = {})   \* voucher assumption {ECC} vs signer
 
@@ -167,36 +168,36 @@ Init ==
   /\ pc = "BOOT" /\ run = 0 /\ nreq = 0
   /\ fa \in Atoms \cup {NONE} /\ fk \in Slots \cup {0}
   /\ (MaxFail >= 2 \/ fa = NONE \/ fk = 0)
-  /\ histAdv = FALSE /\ histRev = FALSE /\ histRepl = FALSE
+  /\ histAdv = FALSE /\ histRev = FALSE /\ histRepl = FALSE /\ histNoHolder = FALSE
 
 \* ---------- environment ----------
 HonestDeposit ==
   /\ req = NoReq /\ nreq < MaxReq
   /\ \E r \in Reqs(HonestSigs, {TRUE}, BOOLEAN, TRUE, {floor}) : req' = r
   /\ nreq' = nreq + 1
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, imgs, lkg, pc, run, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, imgs, lkg, pc, run, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 AttackDeposit ==
   /\ req = NoReq /\ nreq < MaxReq
   /\ \E r \in Reqs(AttackSigs, IF VoucherForge THEN BOOLEAN ELSE {FALSE}, {FALSE}, FALSE, 0..floor) : req' = r
   /\ nreq' = nreq + 1
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, imgs, lkg, pc, run, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, imgs, lkg, pc, run, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 PowerCut ==
   /\ pc # "BOOT"
   /\ pc' = "BOOT" /\ run' = 0
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 \* ---------- boot: journal replay, then request processing ----------
 Burn ==
   /\ pc = "BOOT" /\ journal # NOJ /\ floor < journal
   /\ floor' = journal
-  /\ UNCHANGED <<has, cls, strikes, anergic, journal, req, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<has, cls, strikes, anergic, journal, req, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 ClearJ ==
   /\ pc = "BOOT" /\ journal # NOJ /\ floor >= journal
   /\ journal' = NOJ
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, req, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, req, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 AuthPossibleS(S) ==
   \E i, j \in Slots : i < j /\ \E gi, gj \in Gens :
@@ -217,18 +218,19 @@ ApplyReq ==
      CASE r.op = "ADV" ->
             /\ journal' = floor + 1 /\ req' = NoReq
             /\ histAdv' = (histAdv \/ ~r.hn)
-            /\ UNCHANGED <<floor, has, cls, strikes, anergic, imgs, lkg, pc, run, nreq, fa, fk, histRev, histRepl>>
+            /\ UNCHANGED <<floor, has, cls, strikes, anergic, imgs, lkg, pc, run, nreq, fa, fk, histRev, histRepl, histNoHolder>>
        [] r.op = "REVOKE" ->
             /\ has' = HasAfterRevoke(r) /\ req' = NoReq
             /\ histRev' = (histRev \/ (~r.hn /\ CurrentTarget(r)))
-            /\ UNCHANGED <<floor, cls, strikes, anergic, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRepl>>
+            /\ UNCHANGED <<floor, cls, strikes, anergic, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRepl, histNoHolder>>
        [] r.op = "REPL3" ->
             /\ has' = HasAfterRepl /\ cls' = [cls EXCEPT ![3][floor] = r.nc] /\ req' = NoReq
             /\ histRepl' = (histRepl \/ ~r.hn)
+            /\ histNoHolder' = (histNoHolder \/ (SlotActive(Esc) /\ ~ValidSig(r.sg, Esc)))
             /\ UNCHANGED <<floor, strikes, anergic, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev>>
        [] OTHER ->  \* RESTORE
             /\ strikes' = [strikes EXCEPT ![r.ts] = 0] /\ anergic' = anergic \ {r.ts} /\ req' = NoReq
-            /\ UNCHANGED <<floor, has, cls, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+            /\ UNCHANGED <<floor, has, cls, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 \* not accepted, or accepted but refused by a guard (BRICK_GUARD refusal): drop; strike only if validly-signed but single-class
 RejectReq ==
@@ -238,25 +240,25 @@ RejectReq ==
   /\ IF AnergyMode # "OFF" /\ Fresh(req) /\ HasValidSig(req) /\ Lacks2nd(req)
         THEN StrikeUpdate(req)
         ELSE UNCHANGED <<strikes, anergic>>
-  /\ UNCHANGED <<floor, has, cls, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, journal, imgs, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 Proceed ==
   /\ pc = "BOOT" /\ journal = NOJ /\ req = NoReq
   /\ pc' = "VERIFY_B"
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 \* ---------- verify chain ----------
 VerifyB ==
   /\ pc = "VERIFY_B"
   /\ IF Valid(imgs[1]) THEN pc' = "RUN" /\ run' = 1 ELSE pc' = "VERIFY_ALT" /\ run' = 0
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 VerifyAlt ==
   /\ pc = "VERIFY_ALT"
   /\ IF Valid(imgs[2]) THEN pc' = "RUN" /\ run' = 2
      ELSE IF Valid(lkg) THEN pc' = "LKG" /\ run' = 0
      ELSE pc' = "BRICK_GUARD" /\ run' = 0
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, lkg, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 \* ---------- image updates (A/B) and LKG commit, each two-step so a cut can tear them ----------
 Other(k) == 3 - k
@@ -266,22 +268,22 @@ UpdBegin(k) ==
   /\ pc \in {"RUN", "LKG", "BRICK_GUARD"} /\ run # k
   /\ (pc = "BRICK_GUARD" \/ CanTear(k))
   /\ imgs' = [imgs EXCEPT ![k] = [st |-> "TORN", sg |-> imgs[k].sg, gn |-> imgs[k].gn]]
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 UpdEnd(k) ==
   /\ pc \in {"RUN", "LKG", "BRICK_GUARD"} /\ imgs[k].st = "TORN"
   /\ \E s \in Slots, g \in Gens : KeyValid(s, g) /\ imgs' = [imgs EXCEPT ![k] = GoodImg(s, g)]
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, lkg, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 LkgBegin ==
   /\ pc = "RUN" /\ Valid(imgs[run])
   /\ lkg' = [st |-> "TORN", sg |-> lkg.sg, gn |-> lkg.gn]
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 LkgEnd ==
   /\ pc = "RUN" /\ lkg.st = "TORN" /\ Valid(imgs[run])
   /\ lkg' = imgs[run]
-  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, pc, run, nreq, fa, fk, histAdv, histRev, histRepl>>
+  /\ UNCHANGED <<floor, has, cls, strikes, anergic, journal, req, imgs, pc, run, nreq, fa, fk, histAdv, histRev, histRepl, histNoHolder>>
 
 Next ==
   \/ HonestDeposit \/ AttackDeposit \/ PowerCut
@@ -298,6 +300,8 @@ Inv_NoSingleAssumptionAdvance == ~histAdv
 Inv_NoSingleAssumptionReplace == ~histRepl
 Inv_Bootable == BootableAt(floor, has, imgs, lkg) /\ pc # "BRICK_GUARD"
 Inv_PAM == ~histRev
+\* REQ-LIFE-02: slot 3's key is never replaced while active without slot 3's own valid signature
+Inv_HolderConsent == ~histNoHolder
 Inv_SlotCapability == CapAt(floor, has, cls)
 Inv_JournalSane == journal = NOJ \/ journal = floor \/ journal = floor + 1
 

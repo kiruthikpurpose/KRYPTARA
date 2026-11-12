@@ -1,7 +1,6 @@
-Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=37909 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
 TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
-Running breadth-first search Model-Checking with fp 12 and seed -7962372926397205201 with 2 workers on 2 cores with 4551MB heap and 64MB offheap memory [pid: 2159] (Linux 6.18.44-fc-v242 amd64, Ubuntu 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
-Parsing file /home/claude/atlas2/blueprint/code/V/FirstStage.tla
+Running breadth-first search Model-Checking with fp 116 and seed -6865933179649997425 with 2 workers on 12 cores with 1067MB heap and 64MB offheap memory [pid: 541264] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
 Parsing file /tmp/Integers.tla
 Parsing file /tmp/FiniteSets.tla
 Parsing file /tmp/TLC.tla
@@ -13,14 +12,13 @@ Semantic processing of module Sequences
 Semantic processing of module FiniteSets
 Semantic processing of module TLC
 Semantic processing of module FirstStage
-Starting... (2026-11-06 15:12:59)
+Starting... (2026-11-12 08:24:31)
 Computing initial states...
 Computed 2 initial states...
 Computed 4 initial states...
 Computed 8 initial states...
-Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-06 15:12:59.
-Progress(3) at 2026-11-06 15:13:02: 105,520 states generated (105,520 s/min), 10,016 distinct states found (10,016 ds/min), 7,325 states left on queue.
-Progress(9) at 2026-11-06 15:14:02: 6,948,130 states generated (6,842,610 s/min), 713,713 distinct states found (703,697 ds/min), 335,480 states left on queue.
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 08:24:32.
+Progress(6) at 2026-11-12 08:24:35: 500,889 states generated (500,889 s/min), 118,868 distinct states found (118,868 ds/min), 81,346 states left on queue.
 Error: Invariant Inv_NoSingleAssumptionAdvance is violated.
 Error: The behavior up to this point is:
 State 1: <Initial predicate>
@@ -30,6 +28,7 @@ State 1: <Initial predicate>
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "BOOT"
@@ -56,13 +55,14 @@ State 1: <Initial predicate>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 2: <Proceed line 237, col 3 to line 239, col 124 of module FirstStage>
+State 2: <Proceed line 246, col 3 to line 248, col 138 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "VERIFY_B"
@@ -89,13 +89,14 @@ State 2: <Proceed line 237, col 3 to line 239, col 124 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 3: <AttackDeposit line 173, col 3 to line 176, col 117 of module FirstStage>
+State 3: <AttackDeposit line 181, col 3 to line 184, col 131 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "VERIFY_B"
@@ -122,13 +123,14 @@ State 3: <AttackDeposit line 173, col 3 to line 176, col 117 of module FirstStag
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 4: <VerifyB line 243, col 3 to line 245, col 119 of module FirstStage>
+State 4: <VerifyB line 252, col 3 to line 254, col 133 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "RUN"
@@ -155,13 +157,14 @@ State 4: <VerifyB line 243, col 3 to line 245, col 119 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 5: <UpdBegin line 259, col 3 to line 262, col 122 of module FirstStage>
+State 5: <UpdBegin line 268, col 3 to line 271, col 136 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "RUN"
@@ -188,13 +191,14 @@ State 5: <UpdBegin line 259, col 3 to line 262, col 122 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 6: <UpdEnd line 265, col 3 to line 267, col 122 of module FirstStage>
+State 6: <UpdEnd line 274, col 3 to line 276, col 136 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "RUN"
@@ -221,13 +225,14 @@ State 6: <UpdEnd line 265, col 3 to line 267, col 122 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 7: <PowerCut line 179, col 3 to line 181, col 119 of module FirstStage>
+State 7: <PowerCut line 187, col 3 to line 189, col 133 of module FirstStage>
 /\ histAdv = FALSE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = -1
 /\ pc = "BOOT"
@@ -254,13 +259,14 @@ State 7: <PowerCut line 179, col 3 to line 181, col 119 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-State 8: <ApplyReq line 207, col 3 to line 224, col 115 of module FirstStage>
+State 8: <ApplyReq line 215, col 3 to line 233, col 129 of module FirstStage>
 /\ histAdv = TRUE
 /\ strikes = <<0, 0, 0>>
 /\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
    (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
 /\ floor = 0
+/\ histNoHolder = FALSE
 /\ histRepl = FALSE
 /\ journal = 1
 /\ pc = "BOOT"
@@ -287,7 +293,7 @@ State 8: <ApplyReq line 207, col 3 to line 224, col 115 of module FirstStage>
 /\ histRev = FALSE
 /\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
 
-7164122 states generated, 722927 distinct states found, 337154 states left on queue.
-The depth of the complete state graph search is 9.
+4736707 states generated, 615925 distinct states found, 310468 states left on queue.
+The depth of the complete state graph search is 8.
 The average outdegree of the complete state graph is 2 (minimum is 0, the maximum 31 and the 95th percentile is 3).
-Finished in 01min 06s at (2026-11-06 15:14:04)
+Finished in 14s at (2026-11-12 08:24:46)

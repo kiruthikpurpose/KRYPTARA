@@ -1,0 +1,22 @@
+name: rust-twin
+# Differential test of the Rust quorum checker against the C one (src/prototypes).
+# No Rust toolchain exists on the development laptop, so this workflow is the only place
+# these tests run; until its first green run the result is "not run", not "passed".
+on:
+  push:
+    branches: [main]
+    paths: ["src/prototypes/**", ".github/workflows/rust-twin.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust vs C differential and property tests
+        working-directory: src/prototypes/rust
+        run: cargo test --features diff-c --release

@@ -1,0 +1,162 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 54 and seed 5697972878889349081 with 2 workers on 12 cores with 1067MB heap and 64MB offheap memory [pid: 541590] (Linux 7.0.0-34-generic amd64, Ubuntu 17.0.20.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /home/kiruthik/Downloads/KRYPTARA/simulations/tla/FirstStage.tla
+Parsing file /tmp/Integers.tla
+Parsing file /tmp/FiniteSets.tla
+Parsing file /tmp/TLC.tla
+Parsing file /tmp/Naturals.tla
+Parsing file /tmp/Sequences.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module FirstStage
+Starting... (2026-11-12 08:25:28)
+Computing initial states...
+Computed 2 initial states...
+Computed 4 initial states...
+Computed 8 initial states...
+Finished computing initial states: 9 states generated, with 8 of them distinct at 2026-11-12 08:25:29.
+Error: Invariant Inv_Bootable is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histNoHolder = FALSE
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 0
+/\ nreq = 0
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 2: <HonestDeposit line 175, col 3 to line 178, col 131 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histNoHolder = FALSE
+/\ histRepl = FALSE
+/\ journal = -1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "ADV",
+  sg |-> <<0, -1, 1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> TRUE,
+  pr |-> FALSE,
+  hn |-> TRUE,
+  tf |-> 0 ]
+/\ fk = 0
+/\ nreq = 1
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 3: <ApplyReq line 215, col 3 to line 233, col 129 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 0
+/\ histNoHolder = FALSE
+/\ histRepl = FALSE
+/\ journal = 1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 0
+/\ nreq = 1
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+State 4: <Burn line 193, col 3 to line 195, col 135 of module FirstStage>
+/\ histAdv = FALSE
+/\ strikes = <<0, 0, 0>>
+/\ has = << (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> FALSE),
+   (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE) >>
+/\ floor = 1
+/\ histNoHolder = FALSE
+/\ histRepl = FALSE
+/\ journal = 1
+/\ pc = "BOOT"
+/\ imgs = <<[sg |-> 1, st |-> "GOOD", gn |-> 0], [sg |-> 1, st |-> "EMPTY", gn |-> 0]>>
+/\ cls = << (0 :> {"SHA2"} @@ 1 :> {"SHA2"} @@ 2 :> {"SHA2"}),
+   (0 :> {"KECCAK"} @@ 1 :> {"KECCAK"} @@ 2 :> {"KECCAK"}),
+   ( 0 :> {"KECCAK", "LATTICE"} @@
+     1 :> {"KECCAK", "LATTICE"} @@
+     2 :> {"KECCAK", "LATTICE"} ) >>
+/\ fa = "NONE"
+/\ req = [ op |-> "NONE",
+  sg |-> <<-1, -1, -1>>,
+  ts |-> 0,
+  tg |-> 0,
+  nc |-> {},
+  vo |-> FALSE,
+  pr |-> FALSE,
+  hn |-> FALSE,
+  tf |-> 0 ]
+/\ fk = 0
+/\ nreq = 1
+/\ run = 0
+/\ anergic = {}
+/\ histRev = FALSE
+/\ lkg = [sg |-> 2, st |-> "GOOD", gn |-> 0]
+
+64174 states generated, 16212 distinct states found, 8182 states left on queue.
+The depth of the complete state graph search is 4.
+The average outdegree of the complete state graph is 0 (minimum is 0, the maximum 31 and the 95th percentile is 0).
+Finished in 02s at (2026-11-12 08:25:30)

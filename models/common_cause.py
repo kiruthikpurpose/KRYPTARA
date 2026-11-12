@@ -6,7 +6,8 @@
 # for the shape of the effect, not as an imported standard clause or a claimed numeric beta.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lint import lint, ATOMS, ALL, OPERATE, RECOVERY
+from lint import (lint, ATOMS, ALL, REMOTE, NANO, OPERATE, CONST, RECOVERY, REMOTE_OPERATE,
+                  REMOTE_CONST2, NANO_PRES_OPERATE, BOTHF)
 
 def _tests():
     failures = 0
@@ -54,6 +55,25 @@ def _tests():
                      common_cause_groups=[{"ESC1", "ESC2"}])
     check("D: declaring ESC1+ESC2 (both families, one group) a common cause shrinks U",
           bin(r_rec_cc["U"]).count("1") <= bin(r_rec_base["U"]).count("1"))
+
+    # Risk R-8: a generic break of hash-based signatures, shared by BOTH hash families. Modelled
+    # as one common cause covering every signature atom. What survives is whatever needs presence.
+    SIGS = {"OEM1", "OEM2", "OWN1", "OWN2", "ESC1", "ESC2"}
+    g_op = lint(OPERATE, ATOMS, ALL, 1, 1, loss_kinds=("SIG", "PRES"), common_cause_groups=[SIGS])
+    g_co = lint(CONST, ATOMS, ALL, 2, 1, loss_labels={"group"}, common_cause_groups=[SIGS])
+    g_re = lint(RECOVERY, ATOMS, ALL, 1, 2, loss_labels={"group", "family"}, exclude_loss_combo=BOTHF,
+                common_cause_groups=[SIGS])
+    g_ro = lint(REMOTE_OPERATE, ATOMS, REMOTE, 1, 1, loss_labels={"group"}, common_cause_groups=[SIGS])
+    g_rc = lint(REMOTE_CONST2, ATOMS, REMOTE, 1, 1, loss_labels={"group"}, common_cause_groups=[SIGS])
+    g_np = lint(NANO_PRES_OPERATE, ATOMS, NANO, 1, 1, loss_labels={"group"},
+                common_cause_groups=[{"OEM1", "OWN1", "ESC1"}])
+    check("E: generic signature break: terrestrial T1 OPERATE is unsafe, and no table meets its budget",
+          not g_op["safe"] and not g_op["exists"])
+    check("F: generic signature break: terrestrial T2 CONST and RECOVERY stay safe and live (presence)",
+          g_co["safe"] and g_co["live"] and g_re["safe"] and g_re["live"])
+    check("G: generic signature break: remote profile has no safe table at either tier",
+          not g_ro["safe"] and not g_ro["exists"] and not g_rc["safe"] and not g_rc["exists"])
+    check("H: generic signature break: nano with presence stays safe", g_np["safe"] and g_np["exists"])
 
     print(f"common_cause failures={failures}")
     return failures

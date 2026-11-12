@@ -48,4 +48,10 @@ echo "== [27] RFC 9162 Merkle inclusion-proof reference check (models/merkle_inc
 echo "== [28] ac-ceremony custody-graph capture/replay tool (scripts/ac_ceremony.py)"
 python3 scripts/ac_ceremony.py test   # replay-dependent cases skip cleanly without cbor2
 echo "== [29] 'Recursive' as a testable property (models/recursive_property.py)"; (cd models && python3 recursive_property.py)
+echo "== [30] kernel: tier engine, bit-flip injection, image commit, chain hash C vs Python (src/kernel.c)"
+gcc -O2 -o "$BUILD/kernel_test" tests/kernel_test.c && "$BUILD/kernel_test" self
+cp "$BUILD/kernel_test" models/kernel_test; (cd models && python3 kernel_check.py); rm -f models/kernel_test
+echo "== [31] first-stage prototype vectors (src/prototypes, test_core)"
+gcc -O2 -o "$BUILD/proto_core" src/prototypes/test/test_core.c src/prototypes/c/fs_core.c src/prototypes/c/fs_quorum.c src/prototypes/c/lms.c src/prototypes/c/sha256.c
+"$BUILD/proto_core" src/prototypes/test/vectors.txt | tail -1
 echo "ALL CHECKS COMPLETED"

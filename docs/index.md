@@ -6,7 +6,7 @@
 | Theory | theory/foundational-proposition, theory/mathematical-foundations, theory/hypotheses-and-falsifiability, theory/red-team-r2-findings, theory/limitations-and-open-problems, theory/threat-and-fault-model, theory/proofs |
 | Architecture | architecture/primitives-and-waist, system-architecture, mechanisms, lifecycle, architecture/gateway-pattern, architecture/brownfield-containment-guide |
 | Specifications | specifications/requirements, interfaces-and-data-models, resource-estimates, traceability-matrix |
-| Research | research/source-inventory, evidence-register, problem-mapping, comparison-and-reuse, reproducibility-and-sources, open-questions, legacy-requirements-reconciliation, mcu-survey |
+| Research | research/source-inventory, evidence-register, problem-mapping, comparison-and-reuse, reproducibility-and-sources, open-questions, legacy-requirements-reconciliation, mcu-survey, hash-family-independence |
 | Simulation | simulation/simulation-specifications |
 | Validation | validation/validation-gates, falsification-programme |
 | Decisions | decisions/README, ADR-001..039, legacy-decision-record, ADR-TEMPLATE |

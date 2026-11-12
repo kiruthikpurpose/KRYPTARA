@@ -11,7 +11,10 @@ import hashlib
 GENESIS = b"\x00" * 32
 
 def domain_hash(domain: bytes, prev: bytes, payload: bytes) -> bytes:
-    return hashlib.sha256(domain + prev + payload).digest()
+    # Length-prefix the variable-length domain tag so (domain, prev) boundaries are unambiguous:
+    # plain concatenation would let b"AB"+prev and b"A"+(b"B"+prev[:31]) feed the same prefix bytes.
+    assert len(domain) < 256 and len(prev) == 32
+    return hashlib.sha256(bytes([len(domain)]) + domain + prev + payload).digest()
 
 class Link:
     def __init__(self, domain, payload, policy_table_id):
@@ -92,6 +95,11 @@ def _tests():
     c4.append(Link(b"CHAIN_COMMIT", b"record-1", policy_table_id=1))     # later table, fine
     ok, bad = c4.verify(reject_99)
     check("E: an old link's own (now-superseded) policy is still the one it's checked against", not ok and bad == 0)
+
+    # F: framing -- shifting one byte from the domain tag into the next field must change the digest
+    shifted_prev = b"T" + GENESIS[:31]
+    check("F: domain/prev boundary is unambiguous (length-prefixed tag)",
+          domain_hash(b"CHAIN_COMMIT", GENESIS, b"x") != domain_hash(b"CHAIN_COMMI", shifted_prev, b"x"))
 
     print(f"REQ-CHAIN-01 failures={failures}")
     return failures
