@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Strict warnings and -fanalyzer on each src/*.c (warnings are errors)
         # Tuned 2026-11-13: the tree compiled with zero diagnostics under all of these flags (gcc 13.3), so
         # nothing is suppressed. -Werror makes any new diagnostic fail the job; -fanalyzer is C-only and
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install cppcheck
         run: sudo apt-get update -qq && sudo apt-get install -y -qq cppcheck
       - name: Style and information report (informational, uploaded)
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: shellcheck scripts/*.sh (preinstalled on ubuntu-latest)
         run: |
           shellcheck --version
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
