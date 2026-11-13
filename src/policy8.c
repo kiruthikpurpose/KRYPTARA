@@ -5,8 +5,7 @@
  * No allocation, no recursion, no libc beyond memset. */
 #include <stdint.h>
 #include <string.h>
-
-typedef struct { uint32_t w[8]; } ac_tbl_t;
+#include "ac_types.h"
 
 static inline unsigned tb(const ac_tbl_t *t, unsigned m) { return (t->w[m >> 5] >> (m & 31)) & 1u; }
 static inline void ts(ac_tbl_t *t, unsigned m) { t->w[m >> 5] |= 1u << (m & 31); }
@@ -81,7 +80,6 @@ void ac_derive_labels(uint32_t out[8], const uint8_t provider[8], const uint32_t
  * hash would defeat custody separation (one compromised physical key counts as two independent
  * atoms in the fault model). Compares full 32-byte hashes; only present SIG atoms (kind 1) are
  * checked, matching ac_labels_valid's scope. O(nf^2) over at most 8 atoms, no allocation. */
-typedef struct { uint8_t h[32]; } ac_key_hash_t;
 
 static int ac_hash_eq(const ac_key_hash_t *a, const ac_key_hash_t *b) {
     uint8_t d = 0;
@@ -176,7 +174,6 @@ int ac_tbl_is_projected(const ac_tbl_t *t, uint8_t present) {
  * complementary encodings. A dual-stored table detects single-word bit-flip corruption (flash wear,
  * radiation, torn write) that a single copy cannot: if the live copy and the stored complement no
  * longer agree, ac_tbl_dual_authorises refuses rather than trusting either one. */
-typedef struct { ac_tbl_t t; ac_tbl_t c; } ac_tbl_dual_t;
 
 void ac_tbl_dual_init(ac_tbl_dual_t *d, const ac_tbl_t *t) {
     d->t = *t;

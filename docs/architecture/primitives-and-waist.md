@@ -112,7 +112,8 @@ stateDiagram-v2
 ### 4.5 The waist: three frozen interfaces
 
 ```c
-/* W1: the pure kernel. No I/O, no allocation, no clock, no libc. */
+/* W1: the pure kernel. No I/O, no allocation, no clock, no mutable globals, no recursion; libc limited to
+ * memset, memcpy and memcmp (ADR-041). Executable definition: src/ac_waist.h, src/ac_step.c. */
 typedef int32_t ac_status_t;               /* 0 OK; negative codes stable for ever, never reused */
 ac_status_t ac_step(ac_ctx_t *ctx, const ac_msg_t *in, ac_effects_t *out, size_t *needed);
 ac_status_t ac_ack (ac_ctx_t *ctx, uint32_t intent_seq);   /* platform confirms an intent executed */

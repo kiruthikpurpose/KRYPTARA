@@ -14,6 +14,7 @@ import re, os, subprocess, sys, tempfile, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "src", "policy8.c")
+TYPES_H = os.path.join(ROOT, "src", "ac_types.h")
 FIXCHECK_SRC = os.path.join(ROOT, "tests", "redteam_r2", "fixcheck.c")
 P8TEST_SRC = os.path.join(ROOT, "src", "p8test.c")
 P8CHECK_PY = os.path.join(ROOT, "models", "p8check.py")
@@ -35,7 +36,7 @@ MUTATORS = [
 # would misrepresent a 100%-detectable suite as merely 98%. Each entry needs a one-line proof, not
 # just a claim; see run_all_checks.sh step [27]'s output for where this list is cross-checked.
 KNOWN_EQUIVALENT = {
-    (130, "k > nf -> k >= nf"):
+    ("k > nf -> k >= nf", "if (k > nf) k = nf;"):
         "ac_tbl_upper's `if (k > nf) k = nf;`: when k==nf, the original skips the assignment "
         "(k already equals nf); the mutant's `k >= nf` executes it, assigning nf to a variable "
         "already equal to nf -- a no-op. Identical for k<nf and k>nf too. No input distinguishes them.",
@@ -65,6 +66,7 @@ def run_tests_against(mutant_source):
         os.makedirs(src_dir)
         with open(os.path.join(src_dir, "policy8.c"), "w") as f:
             f.write(mutant_source)
+        shutil.copy(TYPES_H, src_dir)   # policy8.c includes "ac_types.h" from its own directory
 
         # fixcheck.c: quoted #include "../../src/policy8.c" relative to its own folder --
         # replicate the same relative depth (tests/redteam_r2/ -> ../../src/).
@@ -95,6 +97,65 @@ def run_tests_against(mutant_source):
     finally:
         shutil.rmtree(build, ignore_errors=True)
 
+STEP_TARGET = os.path.join(ROOT, "src", "ac_step.c")
+STEP_MUTATORS = MUTATORS + [
+    (r"(?<![<>=!-])<(?![<=])", "<=", "< -> <="),
+    (r"(?<![<>=!-])>(?![>=])", ">=", "> -> >="),
+    (r"\+\+", "--", "++ -> --"),
+]
+# Known-equivalent mutants of ac_step.c: (description, stripped source line) -> why no input can tell them apart.
+STEP_EQUIVALENT = {}
+
+def make_step_scratch():
+    d = tempfile.mkdtemp(prefix="mutstep_")
+    shutil.copytree(os.path.join(ROOT, "src"), os.path.join(d, "src"), ignore=shutil.ignore_patterns("legacy"))
+    os.makedirs(os.path.join(d, "tests")); os.makedirs(os.path.join(d, "models"))
+    shutil.copy(os.path.join(ROOT, "tests", "step_test.c"), os.path.join(d, "tests"))
+    shutil.copytree(os.path.join(ROOT, "tests", "vectors"), os.path.join(d, "tests", "vectors"))
+    for f in os.listdir(os.path.join(ROOT, "models")):
+        if f.endswith(".py"): shutil.copy(os.path.join(ROOT, "models", f), os.path.join(d, "models"))
+    return d
+
+def run_step_mutant(d, mutant_source):
+    """True = SURVIVED (self checks, differential check and golden vectors all still pass)."""
+    with open(os.path.join(d, "src", "ac_step.c"), "w") as f: f.write(mutant_source)
+    cc = subprocess.run(["gcc", "-O2", "-o", "models/step_test", "tests/step_test.c"], cwd=d, capture_output=True, text=True)
+    if cc.returncode != 0: return False
+    try:
+        if subprocess.run(["models/step_test", "self"], cwd=d, capture_output=True, timeout=20).returncode != 0: return False
+        for cmd in (["python3", "step_check.py"], ["python3", "step_check.py", "--verify-golden", "../tests/vectors/waist-v1.txt"]):
+            if subprocess.run(cmd, cwd=os.path.join(d, "models"), capture_output=True, timeout=60).returncode != 0: return False
+    except subprocess.TimeoutExpired:
+        return False
+    return True
+
+def main_step(limit=None):
+    source = open(STEP_TARGET).read()
+    code_only = blank_comments(source)
+    sites = []
+    for pattern, repl, desc in STEP_MUTATORS:
+        for m in re.finditer(pattern, code_only):
+            sites.append((m.start(), m.end(), repl.replace("\\|", "|"), desc))
+    if limit: sites = sites[:limit]
+    d = make_step_scratch(); killed = equivalent = 0; survivors = []
+    try:
+        for start, end, repl, desc in sites:
+            line_no = source[:start].count("\n") + 1
+            if run_step_mutant(d, source[:start] + repl + source[end:]):
+                key = (desc, source.split("\n")[line_no - 1].strip())
+                if key in STEP_EQUIVALENT:
+                    equivalent += 1
+                    print(f"  EQUIVALENT line {line_no}: {desc} -- {STEP_EQUIVALENT[key]}")
+                else:
+                    survivors.append((line_no, desc, key[1])); print(f"  SURVIVOR  line {line_no}: {desc}   [{key[1][:90]}]")
+            else: killed += 1
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+    total = killed + len(survivors)
+    print(f"\nac_step.c mutation score: {killed}/{total} detectable mutants killed ({killed / total:.0%}); "
+          f"{equivalent} known-equivalent excluded; {len(survivors)} survivor(s)")
+    if survivors: sys.exit(1)
+
 def main(limit=None):
     source = open(TARGET).read()
     sites = find_mutations(source)
@@ -107,7 +168,7 @@ def main(limit=None):
         line_no = source[:start].count("\n") + 1
         ok, reason = run_tests_against(mutant_source)
         if ok:
-            key = (line_no, desc)
+            key = (desc, source.split("\n")[line_no - 1].strip())
             if key in KNOWN_EQUIVALENT:
                 equivalent += 1
                 print(f"  EQUIVALENT (not a gap)  line {line_no}: {desc} -- {KNOWN_EQUIVALENT[key]}")
@@ -128,5 +189,7 @@ def main(limit=None):
     return survivors
 
 if __name__ == "__main__":
-    limit = int(sys.argv[1]) if len(sys.argv) > 1 else None
-    main(limit)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    limit = int(args[0]) if args else None
+    if "--step" in sys.argv: main_step(limit)
+    else: main(limit)

@@ -57,4 +57,10 @@ gcc -O2 -o "$BUILD/proto_core" src/prototypes/test/test_core.c src/prototypes/c/
 echo "== [32] PQC migration as class retirement, two schedules (models/pqc_migration.py)"; (cd models && python3 pqc_migration.py | tail -5)
 echo "== [33] TUF threshold roles under label-aware analysis (models/tuf_mapping.py)"; (cd models && python3 tuf_mapping.py)
 echo "== [34] OQ-12/ADR-040: re-keying a slot whose holder is lost (models/lost_holder.py)"; (cd models && python3 lost_holder.py)
+echo "== [35] waist v1: pure step function, self checks (src/ac_step.c, tests/step_test.c)"
+gcc -O2 -std=c99 -Wall -Wextra -o "$BUILD/step_test" tests/step_test.c && "$BUILD/step_test" self
+echo "== [36] waist v1: C vs independent Python model on random scenarios, and golden vectors (models/step_check.py)"
+cp "$BUILD/step_test" models/step_test; (cd models && python3 step_check.py && python3 step_check.py --verify-golden ../tests/vectors/waist-v1.txt); rm -f models/step_test
+echo "== [37] architecture fitness checks on the kernel core, and their negative self-test (scripts/arch_check.py)"
+python3 scripts/arch_check.py && python3 scripts/arch_check.py --self-test
 echo "ALL CHECKS COMPLETED"
