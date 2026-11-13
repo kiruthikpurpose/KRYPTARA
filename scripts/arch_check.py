@@ -2,7 +2,7 @@
 """Architecture fitness checks: the kernel's design rules, made executable (REQ-WAIST-01, ADR-041).
 Each rule fails the build when broken, so the rules cannot erode silently as the code grows.
 
-Rules, for the kernel core (src/ac_types.h, ac_waist.h, policy8.c, kernel.c, ac_step.c):
+Rules, for the kernel core (src/ac_types.h, ac_waist.h, policy8.c, policy8_prov.c, kernel.c, ac_step.c):
   R1  includes: only <stdint.h>, <stddef.h>, <string.h> and files of the core itself
   R2  no I/O, allocation, clock, randomness or non-local jumps in the source
   R3  each translation unit builds clean under -std=c99 -pedantic -Wall -Wextra -Werror
@@ -19,8 +19,8 @@ import os, re, subprocess, sys, tempfile
 ROOT = os.environ.get("ARCH_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, "src")
-CORE = ["ac_types.h", "ac_waist.h", "policy8.c", "kernel.c", "ac_step.c"]
-CORE_TUS = ["policy8.c", "kernel.c", "ac_step.c"]
+CORE = ["ac_types.h", "ac_waist.h", "policy8.c", "policy8_prov.c", "kernel.c", "ac_step.c"]
+CORE_TUS = ["policy8.c", "policy8_prov.c", "kernel.c", "ac_step.c"]
 SYSTEM_INCLUDES = {"stdint.h", "stddef.h", "string.h"}
 QUOTED_INCLUDES = set(CORE) | {"prototypes/c/sha256.h"}
 BANNED = r"\b(malloc|calloc|realloc|free|alloca|printf|fprintf|sprintf|snprintf|vsnprintf|puts|putchar|scanf|sscanf|fopen|fclose|fread|fwrite|getchar|exit|abort|rand|srand|time|clock|gettimeofday|signal|setjmp|longjmp|qsort|errno|asm|__asm__)\b"

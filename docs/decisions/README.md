@@ -1,6 +1,6 @@
 # Decisions
 
-ADR-001..038 are the authoritative decisions (L2). `legacy-decision-record.md` holds the full Rev 4
+ADR-001..041 are the decisions (L2); ADR-040 and ADR-041 are Proposed, the rest are authoritative. `legacy-decision-record.md` holds the full Rev 4
 D/C/X/J tables, which remain valid unless an ADR supersedes them. Mapping: each ADR lists its legacy
 IDs. Every D-xx ("DECIDED: what we are building") item now has an ADR — ADR-001..015 migrated the
 load-bearing R2-era decisions first; `scripts/migrate_legacy_decisions.py` mechanically generated

@@ -13,7 +13,7 @@ enum { CUT_NONE, CUT_PROG_BYTE, CUT_PROG_WORD, CUT_ERASE };
 typedef struct {
     uint8_t mem[2 * PS];
     unsigned opcount, cut_op; int kind; unsigned cut_pos; uint8_t mask; uint32_t wmask_seed;
-    int dead; unsigned reprog; unsigned nprog, nerase; 
+    int dead; unsigned reprog; unsigned nprog, nerase;
     unsigned rec_n[64]; unsigned rec_kind[64];  /* recorded ops in dry run */
 } sim;
 

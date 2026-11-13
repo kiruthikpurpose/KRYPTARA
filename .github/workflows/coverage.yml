@@ -1,0 +1,39 @@
+name: coverage
+# Line and branch coverage of src/ from the C tests (gcc --coverage + gcov, merged by
+# scripts/ci/coverage_gate.py). Fails below the floors in that script; report uploaded as an artifact.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Measure and gate coverage
+        run: python3 scripts/ci/coverage_gate.py --out build/coverage
+      - name: Add to job summary
+        if: always()
+        run: |
+          if [ -f build/coverage/coverage.txt ]; then
+            { echo '### C coverage of src/'; echo '```'; cat build/coverage/coverage.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            build/coverage/coverage.txt
+            build/coverage/coverage.json
+          if-no-files-found: warn

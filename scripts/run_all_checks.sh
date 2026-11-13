@@ -13,7 +13,16 @@ gcc -O2 -Wall -o "$BUILD/p8test" src/p8test.c; cp "$BUILD/p8test" models/p8test;
 echo "== [4] projection test (TEST-ADM-05)"; gcc -O2 -o "$BUILD/test_projection" tests/test_projection.c && "$BUILD/test_projection"
 echo "== [5] hardened-API fail-closed checks (red-team R2)"; gcc -O1 -I src -o "$BUILD/fixcheck" tests/redteam_r2/fixcheck.c 2>/dev/null || gcc -O1 -o "$BUILD/fixcheck" tests/redteam_r2/fixcheck.c -I tests/redteam_r2; "$BUILD/fixcheck"
 echo "== [6] red-team R2 path analysis (informational)"; (cd tests/redteam_r2 && python3 r2_absent.py | tail -8)
-if command -v arm-none-eabi-gcc >/dev/null; then echo "== [7] Cortex-M0+ size"; arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -c src/policy8.c -o "$BUILD/policy8_m0.o" && arm-none-eabi-size "$BUILD/policy8_m0.o"; fi
+if command -v arm-none-eabi-gcc >/dev/null; then
+  echo "== [7] Cortex-M0+ size, GATE-07 (locked-stage runtime object, budget in scripts/emu/size_budget.txt)"
+  BUDGET=$(grep -v '^#' scripts/emu/size_budget.txt | grep -E '^[0-9]+$' | head -1)
+  arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -c src/policy8.c -o "$BUILD/policy8_m0_full.o"
+  arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os -DAC_RUNTIME_ONLY -c src/policy8.c -o "$BUILD/policy8_m0.o"
+  arm-none-eabi-size "$BUILD/policy8_m0_full.o"; arm-none-eabi-size "$BUILD/policy8_m0.o"
+  SZ=$(arm-none-eabi-size "$BUILD/policy8_m0.o" | awk 'NR==2 {print $1 + $2}')
+  echo "   runtime object text+data = ${SZ} B, budget = ${BUDGET} B"
+  if [ "$SZ" -gt "$BUDGET" ]; then echo "FAIL GATE-07: ${SZ} B exceeds ${BUDGET} B" >&2; exit 1; fi
+fi
 echo "== [8] GATE-12 hazard sweep (simulations/hazard_sweep.py)"; python3 simulations/hazard_sweep.py | tail -3
 echo "== [9] host timing of admission table primitives (tests/bench_policy8.c)"
 gcc -O2 -o "$BUILD/bench_policy8" tests/bench_policy8.c && "$BUILD/bench_policy8"
@@ -63,4 +72,6 @@ echo "== [36] waist v1: C vs independent Python model on random scenarios, and g
 cp "$BUILD/step_test" models/step_test; (cd models && python3 step_check.py && python3 step_check.py --verify-golden ../tests/vectors/waist-v1.txt); rm -f models/step_test
 echo "== [37] architecture fitness checks on the kernel core, and their negative self-test (scripts/arch_check.py)"
 python3 scripts/arch_check.py && python3 scripts/arch_check.py --self-test
+echo "== [38] repository health: docs, claims, register ids, commands, README numbers, model/C constants, licence (scripts/health_check.py)"
+python3 scripts/health_check.py && python3 scripts/health_check.py --self-test
 echo "ALL CHECKS COMPLETED"

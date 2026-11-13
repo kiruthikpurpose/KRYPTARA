@@ -56,7 +56,11 @@ class Model:
         if any(at[a] != 1 for a in (RESUME, ACTIVATE, TIGHTEN, EPOCH, RETIRE)): return ADMIT
         if at[KEY_INSTALL] not in (2, 3) or at[INSTALL_TABLE] != at[KEY_INSTALL]: return ADMIT
         self.present, self.kinds, self.key_present = present, list(kinds), kp
-        self.key = [bytes([0x10 + i]) * 32 if (kp >> i) & 1 else bytes(32) for i in range(8)]
+        # g["keys"] (optional) = one fill byte per slot; the harness default is 0x10 + slot
+        keys = g.get("keys") or [0x10 + i for i in range(8)]
+        self.key = [bytes([keys[i]]) * 32 if (kp >> i) & 1 else bytes(32) for i in range(8)]
+        if any((kp >> i) & 1 and (kp >> j) & 1 and self.key[i] == self.key[j] for i in range(8) for j in range(i + 1, 8)):
+            self.__init__(); return DUPKEY
         self.bud = [dict(b) for b in g["bud"]]
         self.action_tier = list(at)
         for t in range(4):
@@ -194,11 +198,12 @@ class Model:
 
 def genesis_line(g):
     x = lambda v: format(v, "x")
-    out = ["G", x(g["present"])] + [x(k) for k in g["kinds"]] + [x(g["key_present"]), x(g["halt_budget"])]
+    out = ["D" if g.get("keys") else "G", x(g["present"])] + [x(k) for k in g["kinds"]] + [x(g["key_present"]), x(g["halt_budget"])]
     for b in g["bud"]:
         out += [x(b["t"]), x(b["s"]), x(b["nfc"]), x(b["nfl"]), x(b["xc"][0]), x(b["xc"][1]), x(b["xl"][0]), x(b["xl"][1])]
         out += [x(v) for v in b["fc"]] + [x(v) for v in b["fl"]]
     out += [x(a) for a in g["action_tier"]] + [format(t, "064x") for t in g["table"]]
+    if g.get("keys"): out += [x(k) for k in g["keys"]]
     return " ".join(out)
 
 def message_line(m):
@@ -216,7 +221,9 @@ def run(lines):
     out, mod = [], Model()
     for ln in lines:
         f = ln.split()
-        if f[0] == "G":
+        if f[0] in ("G", "D"):
+            keys = None
+            if f[0] == "D": keys, f = [int(t, 16) for t in f[-8:]], f[:-8]
             v = [int(t, 16) for t in f[1:-4]]
             kinds, kp, hb = v[1:9], v[9], v[10]
             bud, pos = [], 11
@@ -226,7 +233,7 @@ def run(lines):
                 bud.append(dict(t=t, s=s, nfc=nfc, nfl=nfl, xc=(xca, xcb), xl=(xla, xlb), fc=fc, fl=fl))
                 pos += 8 + 2 * MAXC
             g = dict(present=v[0], kinds=kinds, key_present=kp, halt_budget=hb, bud=bud, action_tier=v[pos:pos + 8],
-                     table=[int(t, 16) for t in f[-4:]])
+                     table=[int(t, 16) for t in f[-4:]], keys=keys)
             out.append(mod.line("G", mod.genesis(g)))
         elif f[0] == "A":
             out.append(mod.line("A", mod.ack(int(f[1], 16))))

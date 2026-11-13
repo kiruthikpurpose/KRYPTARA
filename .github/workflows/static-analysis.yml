@@ -1,0 +1,95 @@
+name: static-analysis
+# Static checks that need no test run: strict compiler diagnostics + gcc -fanalyzer on src/, cppcheck,
+# shellcheck, ruff. Called by all-checks.yml; can also be run by hand.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  c-strict-gcc:
+    name: C strict build + gcc -fanalyzer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strict warnings and -fanalyzer on each src/*.c (warnings are errors)
+        # Tuned 2026-11-13: the tree compiled with zero diagnostics under all of these flags (gcc 13.3), so
+        # nothing is suppressed. -Werror makes any new diagnostic fail the job; -fanalyzer is C-only and
+        # has false positives on complex code, so if one appears fix the code or add a targeted pragma.
+        run: |
+          set -o pipefail
+          mkdir -p build
+          for f in src/policy8.c src/ac_step.c src/kernel.c src/p8test.c; do
+            echo "::group::$f"
+            gcc -std=c99 -O2 -c "$f" -I src -o build/analyze.o \
+              -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wstrict-prototypes \
+              -Wcast-qual -Wformat=2 -Wundef -Wdouble-promotion -Wnull-dereference \
+              -fanalyzer -Werror 2>&1 | tee -a build/strict.log
+            echo "::endgroup::"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strict-build-log
+          path: build/strict.log
+          if-no-files-found: ignore
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq cppcheck
+      - name: Style and information report (informational, uploaded)
+        run: |
+          mkdir -p build
+          cppcheck --std=c99 --enable=style,information --inline-suppr \
+            --suppressions-list=.cppcheck-suppressions -I src \
+            --template='{file}:{line}: [{severity}:{id}] {message}' src/*.c 2> build/cppcheck-style.txt || true
+          cat build/cppcheck-style.txt
+      - name: Gate on warning, performance, portability and errors
+        run: |
+          cppcheck --std=c99 --enable=warning,performance,portability --inline-suppr \
+            --suppressions-list=.cppcheck-suppressions -I src --error-exitcode=1 \
+            --template='{file}:{line}: [{severity}:{id}] {message}' src/*.c
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cppcheck-style-report
+          path: build/cppcheck-style.txt
+          if-no-files-found: ignore
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck scripts/*.sh (preinstalled on ubuntu-latest)
+        run: |
+          shellcheck --version
+          shellcheck --severity=warning --external-sources scripts/*.sh
+
+  python-lint:
+    name: ruff (models, scripts, simulations, tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install --quiet ruff==0.8.4
+      - name: ruff check (rules in ruff.toml)
+        run: ruff check --output-format=github models scripts simulations tests
+      - name: Python syntax compile of every tracked .py
+        run: git ls-files '*.py' | grep -v '^research-archive/' | xargs python3 -m py_compile

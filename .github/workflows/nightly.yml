@@ -1,0 +1,66 @@
+name: nightly
+# Slow checks and mutation testing, once a night and on demand. Logs are uploaded either way.
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  slow-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install --quiet -r requirements.txt
+      - name: scripts/run_slow_checks.sh
+        run: |
+          mkdir -p build/logs
+          set -o pipefail
+          bash scripts/run_slow_checks.sh 2>&1 | tee build/logs/slow-checks.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slow-checks-log
+          path: build/logs/
+          if-no-files-found: warn
+
+  mutation:
+    name: mutation (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [policy8, step]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run mutation test
+        run: |
+          mkdir -p build/logs
+          set -o pipefail
+          if [ "${{ matrix.mode }}" = step ]; then
+            python3 scripts/mutation_test.py --step 2>&1 | tee build/logs/mutation-step.log
+          else
+            python3 scripts/mutation_test.py 2>&1 | tee build/logs/mutation-policy8.log
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-log-${{ matrix.mode }}
+          path: build/logs/
+          if-no-files-found: warn

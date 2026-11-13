@@ -8,4 +8,6 @@ gcc -O2 -o "$BUILD/proto_pf" $P/test/test_powerfail.c $P/c/fs_journal.c $P/c/fs_
 "$BUILD/proto_pf" $P/test/pf_vectors.txt quick | tail -1
 echo "== [S2] hazard parameter-uncertainty sweep, full (simulations/fleet_uncertainty.py), about 5 minutes"
 python3 simulations/fleet_uncertainty.py | tail -4
+echo "== [S3] mutation test of src/ac_step.c against the self checks, differential check and golden vectors (scripts/mutation_test.py --step), several minutes"
+python3 scripts/mutation_test.py --step | tail -3
 echo "SLOW CHECKS COMPLETED"

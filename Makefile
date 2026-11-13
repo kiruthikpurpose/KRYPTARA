@@ -1,4 +1,4 @@
-.PHONY: help check audit arch step mutation-step slow bench quick clean
+.PHONY: size-emu cycles-emu help check audit health arch step mutation-step slow bench quick clean
 
 help:  ## list targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
@@ -8,6 +8,10 @@ check:  ## full check suite (scripts/run_all_checks.sh)
 
 audit:  ## documentation audit
 	python3 scripts/audit_docs.py
+
+health:  ## repository consistency check (docs vs claims vs code) plus self-test
+	python3 scripts/health_check.py
+	python3 scripts/health_check.py --self-test
 
 arch:  ## architecture fitness checks R1-R8 plus self-test
 	python3 scripts/arch_check.py
@@ -41,3 +45,10 @@ quick:  ## fast loop: C admission and hardened API only
 
 clean:  ## remove build output
 	rm -rf build simulations/tla/states
+
+EMU_PY ?= python3
+size-emu:  ## per-function Thumb-1 size via zig cc (LLVM, not gcc, not silicon); needs ziglang pyelftools
+	$(EMU_PY) scripts/emu/size_report.py
+
+cycles-emu:  ## Cortex-M0+ cycle ESTIMATE of admission functions in Unicorn (not silicon); needs ziglang unicorn pyelftools capstone
+	$(EMU_PY) scripts/emu/cycles.py

@@ -1,0 +1,3 @@
+# Known file-hygiene violations, accepted for now so the check can gate new problems.
+# Format: path:line: reason (exactly as file_hygiene.py prints it). Remove a line when the file is fixed.
+# Found 2026-11-13; the file is outside the CI-owned paths, so it was reported, not edited.

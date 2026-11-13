@@ -6,6 +6,7 @@
  * Scenario lines (all numbers hex):
  *   G present k0..k7 keymask h  then, for each of the 4 tiers: t s nfc nfl xca xcb xla xlb fc0..fc15 fl0..fl15
  *     then a0..a7 (action tiers) and tbl0..tbl3. Class masks and exclusions are 0xff when unused.
+ *   D ...                               as G, then 8 key fill bytes (slot i's hash = 32 copies; G uses 0x10+i)
  *   H S atom bundle                     HALT message
  *   P action S atom bundle tier D T     PROPOSE_TX; D = 32-byte digest hex or -, T = 32-byte table hex or -
  *   B D                                 BOOT message
@@ -43,7 +44,7 @@ static int run(void) {
     char tag[4];
     while (scanf("%3s", tag) == 1) {
         ac_effects_t fx; size_t need; ac_msg_t m; memset(&m, 0, sizeof m); ac_status_t st;
-        if (tag[0] == 'G') {
+        if (tag[0] == 'G' || tag[0] == 'D') {
             ac_genesis_t g; memset(&g, 0, sizeof g); unsigned x;
             #define RD(f) do { if (scanf("%x", &x) != 1) return 2; (f) = (uint8_t)x; } while (0)
             RD(g.present); for (int i = 0; i < 8; i++) RD(g.kinds[i]); RD(g.key_present); RD(g.halt_budget);
@@ -56,6 +57,7 @@ static int run(void) {
             for (int i = 0; i < AC_ACT_N; i++) RD(g.action_tier[i]);
             for (int t = 0; t < AC_TIER_N; t++) if (read_table(&g.table[t])) return 2;
             for (int i = 0; i < 8; i++) memset(g.key[i].h, 0x10 + i, 32);
+            if (tag[0] == 'D') for (int i = 0; i < 8; i++) { RD(x); memset(g.key[i].h, (int)x, 32); }
             st = ac_genesis(&c, &g);
             print_state('G', st, 0, &c);
             continue;
@@ -189,6 +191,17 @@ static int self(void) {
     /* J: corruption. A flipped bit in a stored table copy is detected by the digest and by authorise */
     ac_ctx_t bad_c = c; bad_c.eng.tier[1].c.w[0] ^= 1u;
     uint8_t dg[32]; bad += ac_ctx_digest(&bad_c, dg) != AC_E_STATE;
+
+    /* L: fail closed on a corrupted budget in memory. Genesis validates t, s and the class counts, so
+     * these cannot arise through ac_genesis; the admission must still refuse them rather than guess. */
+    ref_genesis(&g, 0); ac_ctx_t cl; bad += ac_genesis(&cl, &g) != AC_OK;
+    memset(&m, 0, sizeof m); m.kind = AC_MSG_PROPOSE_TX; m.action = AC_ACT_INSTALL_TABLE; m.tier = 1; m.evidence = 0x47;
+    m.table = cl.eng.tier[1].t;                                           /* re-installing the current table is admissible */
+    ac_ctx_t cm = cl; bad += ac_step(&cm, &m, &fx, &need) != AC_OK;
+    cm = cl; cm.bud[1].t = 3; bad += ac_step(&cm, &m, &fx, &need) != AC_E_ADMIT;
+    cm = cl; cm.bud[1].nfc = 33; bad += ac_step(&cm, &m, &fx, &need) != AC_E_ADMIT;
+    cm = cl; cm.bud[1].s = 3; bad += ac_step(&cm, &m, &fx, &need) != AC_E_ADMIT;
+    cm = cl; cm.bud[1].nfl = 33; bad += ac_step(&cm, &m, &fx, &need) != AC_E_ADMIT;
 
     /* K: status codes are negative and distinct */
     const int codes[] = { AC_E_BADMSG, AC_E_AUTH, AC_E_ADMIT, AC_E_HOLDER, AC_E_DUPKEY, AC_E_HALTED, AC_E_BUDGET,

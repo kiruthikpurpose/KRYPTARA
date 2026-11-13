@@ -15,7 +15,7 @@ GROUPS = [OEM, OWN, ESC]; FAMS = [H1, H2]
 
 def unions(base, k):
     if k == 0: return [0]
-    return sorted({sum(set_) if False else _u(c) for c in itertools.combinations(base, k)})
+    return sorted({_u(c) for c in itertools.combinations(base, k)})
 def _u(c):
     r = 0
     for x in c: r |= x

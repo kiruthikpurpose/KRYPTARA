@@ -195,6 +195,73 @@ def scenario(rng, n_steps, genesis=None):
         out.append(mod.line(lines[-1].split()[0], st, fx))
     return lines, out
 
+def drive(g, msgs):
+    """Genesis then a fixed message list through the model, acknowledging after every accepted message."""
+    mod = Model(); lines = [genesis_line(g)]; out = [mod.line("G", mod.genesis(g))]
+    for m in msgs:
+        if mod.init and mod.seq != mod.acked:
+            lines.append(f"A {mod.seq:x}"); out.append(mod.line("A", mod.ack(mod.seq)))
+        lines.append(message_line(m)); st, fx = mod.step(m); out.append(mod.line(lines[-1].split()[0], st, fx))
+    return lines, out
+
+def with_budget(g, tier, **kw):
+    import copy
+    g = copy.deepcopy(g); g["bud"][tier].update(kw); return g
+
+def sixteen_class_genesis(base, tier, side):
+    """The reference genesis with `tier` holding AC_MAX_CLASSES (16) classes on one side, table set to the lower bound."""
+    import copy
+    g = copy.deepcopy(base)
+    cls = BASE12 + [0x05, 0x0a, 0x50, 0xa0]
+    b = g["bud"][tier]; key = "fc" if side == "c" else "fl"
+    b[key] = list(cls); b["nfc" if side == "c" else "nfl"] = 16
+    if tier:
+        probe = Model(); probe.present, probe.kinds, probe.bud = g["present"], g["kinds"], g["bud"]
+        iv = probe.interval(tier)
+        if iv: g["table"][tier] = project(iv[0], g["present"])
+    return g
+
+def boundary_scenarios():
+    """Targeted scenarios for the boundary cases random generation rarely reaches (found by mutation testing
+    of src/ac_step.c): single malformed budget fields at every tier, class counts at AC_MAX_CLASSES, excluded-pair
+    boundaries, duplicate keys at every slot pair, and every slot value against every slot-addressed action."""
+    sc = []
+    for fortress in (False, True):
+        base = reference_genesis(fortress)
+        for tier in range(4):
+            n = base["bud"][tier]["nfc"]
+            for kw in (dict(t=3), dict(s=3), dict(t=255), dict(s=255), dict(nfc=17), dict(nfl=17), dict(nfc=255), dict(nfl=255),
+                       dict(xc=(NONE, 0)), dict(xc=(0, NONE)), dict(xl=(NONE, 0)), dict(xl=(0, NONE)),
+                       dict(xc=(1, 1)), dict(xl=(1, 1)), dict(xc=(2, 1)), dict(xl=(2, 1)),
+                       dict(xc=(0, n)), dict(xl=(0, n)), dict(xc=(n - 1, n)), dict(xl=(n - 1, n)), dict(xc=(n, n + 1)), dict(xl=(n, n + 1)),
+                       dict(xc=(n - 2, n - 1)), dict(xl=(n - 2, n - 1)), dict(xc=(0, 1)), dict(xl=(0, 1))):
+                if kw.get("nfc", 0) > 16 or kw.get("nfl", 0) > 16:   # no zero class mask inside the 16 stored slots, so only the count is wrong
+                    kw = dict(kw, fc=BASE12 + [5, 10, 80, 160], fl=BASE12 + [5, 10, 80, 160])
+                sc.append(drive(with_budget(base, tier, **kw), []))
+            for side in "cl":
+                sc.append(drive(sixteen_class_genesis(base, tier, side), []))
+        g = with_budget(base, 0, t=2, s=2, nfc=16, nfl=16)
+        sc.append(drive(g, []))
+        for side in "cl":   # a zero class mask in the last slot of a 16-class list, and one in the 17th (outside) slot
+            for pos in (15, 16):
+                gg = sixteen_class_genesis(base, 0, side)
+                if pos < 16: gg["bud"][0]["fc" if side == "c" else "fl"][pos] = 0
+                sc.append(drive(gg, []))
+        # duplicate key hashes at genesis, every slot pair (slots 6 and 7 hold no key: no conflict)
+        for i in range(8):
+            for j in range(i + 1, 8):
+                gg = dict(base); gg["keys"] = [0x10 + k for k in range(8)]; gg["keys"][j] = gg["keys"][i]
+                sc.append(drive(gg, []))
+    # every slot value against every slot-addressed action, on two profiles (the second has a SIG slot that is not present)
+    rem = remote_genesis(); rem["kinds"] = [1] * 8; rem["kinds"][7] = 3
+    for base in (reference_genesis(False), rem):
+        gg = dict(base); gg["keys"] = [1] + [0x10 + k for k in range(1, 8)]    # key[0] = 0x01 bytes, so OOB slot reads see 1
+        msgs = [msg(MSG_HALT, evidence=0xff, atom=a, bundle=a % 16) for a in range(256)]
+        msgs += [msg(MSG_PROPOSE_TX, action=KEY_INSTALL, evidence=0xff, atom=a, digest=bytes([a]) * 32) for a in range(256)]
+        msgs += [msg(MSG_PROPOSE_TX, action=RETIRE, evidence=0xff, atom=a) for a in range(256)]
+        sc.append(drive(gg, msgs))
+    return sc
+
 def run_c(lines):
     r = subprocess.run(["./step_test", "run"], input="\n".join(lines) + "\n", capture_output=True, text=True)
     return r.stdout.split("\n")[:-1], r.returncode
@@ -212,6 +279,7 @@ def main(n_scen=250, steps=60, seed=1337):
     scenarios = []
     for i in range(n_scen):
         scenarios.append(scenario(rng, steps, (reference_genesis(i % 2 == 0) if i < 40 else remote_genesis() if i < 50 else None)))
+    scenarios += boundary_scenarios()
     all_in = [ln for s in scenarios for ln in s[0]]
     all_out = [ln for s in scenarios for ln in s[1]]
     c_out, rc = run_c(all_in)

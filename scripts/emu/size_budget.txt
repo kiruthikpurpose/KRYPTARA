@@ -1,0 +1,6 @@
+# GATE-07 size budget, bytes: arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -Os, text+data of the
+# locked-stage runtime admission object (src/policy8.c compiled with -DAC_RUNTIME_ONLY).
+# Single source of truth: read by scripts/run_all_checks.sh step [7] and scripts/emu/size_report.py.
+# Rationale: docs/validation/validation-gates.md GATE-07 / OQ-13 (1024 B target). Changing this
+# number is a gate decision for the maintainer, not a build fix.
+1024

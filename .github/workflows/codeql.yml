@@ -1,0 +1,50 @@
+name: codeql
+# GitHub CodeQL for C/C++ and Python. Results appear under Security > Code scanning.
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: c-cpp
+            build-mode: manual
+          - language: python
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-and-quality
+      - name: Build C sources for the extractor
+        if: matrix.language == 'c-cpp'
+        run: |
+          mkdir -p build/codeql
+          for t in fuzz_policy8 step_test kernel_test test_projection; do
+            gcc -std=gnu99 -O0 -o build/codeql/$t tests/$t.c
+          done
+          gcc -std=c99 -O0 -c src/p8test.c -I src -o build/codeql/p8test.o
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

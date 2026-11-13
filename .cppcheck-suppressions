@@ -1,0 +1,6 @@
+# cppcheck suppressions for src/. One rule per line: id[:file[:line]]. Every entry needs a reason.
+# System headers are not available/needed for analysis of a freestanding-style kernel.
+missingIncludeSystem
+# Tests include the .c files directly (single translation unit style), so unused-function reports
+# on a per-file basis are meaningless; unusedFunction is also not enabled in the workflow.
+unusedFunction

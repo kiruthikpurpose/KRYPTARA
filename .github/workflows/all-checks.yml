@@ -1,0 +1,50 @@
+name: all-checks
+# Single entry point for the new check workflows. Require the job `checks-pass` in branch protection:
+# it succeeds only if every called workflow succeeded (skipped is not accepted).
+# ci.yml (checks, slow-checks) keeps its own triggers and is NOT called from here; require
+# `checks / checks` separately, or see docs/architecture/ci-architecture.md.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: all-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-analysis:
+    uses: ./.github/workflows/static-analysis.yml
+  sanitizers:
+    uses: ./.github/workflows/sanitizers.yml
+  coverage:
+    uses: ./.github/workflows/coverage.yml
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+  repo-hygiene:
+    uses: ./.github/workflows/repo-hygiene.yml
+
+  checks-pass:
+    name: checks-pass
+    if: always()
+    needs: [static-analysis, sanitizers, coverage, codeql, repo-hygiene]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every called workflow to have succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" != "success" ]; then echo "a required workflow finished as: $r"; exit 1; fi
+          done

@@ -14,6 +14,11 @@ import re, os, subprocess, sys, tempfile, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "src", "policy8.c")
+TARGET_PROV = os.path.join(ROOT, "src", "policy8_prov.c")
+# The mutation target is policy8.c plus policy8_prov.c (the provisioning half split out of it): the two
+# are mutated as ONE text, joined by PROV_SEP (a comment, so never a mutation site), and split again
+# when a mutant is written to the scratch tree. Mutators and equivalence keys are unchanged.
+PROV_SEP = "\n/*@@policy8_prov.c@@*/\n"
 TYPES_H = os.path.join(ROOT, "src", "ac_types.h")
 FIXCHECK_SRC = os.path.join(ROOT, "tests", "redteam_r2", "fixcheck.c")
 P8TEST_SRC = os.path.join(ROOT, "src", "p8test.c")
@@ -64,8 +69,11 @@ def run_tests_against(mutant_source):
     try:
         src_dir = os.path.join(build, "src")
         os.makedirs(src_dir)
+        main_part, _, prov_part = mutant_source.partition(PROV_SEP)
         with open(os.path.join(src_dir, "policy8.c"), "w") as f:
-            f.write(mutant_source)
+            f.write(main_part)
+        with open(os.path.join(src_dir, "policy8_prov.c"), "w") as f:
+            f.write(prov_part)
         shutil.copy(TYPES_H, src_dir)   # policy8.c includes "ac_types.h" from its own directory
 
         # fixcheck.c: quoted #include "../../src/policy8.c" relative to its own folder --
@@ -104,7 +112,29 @@ STEP_MUTATORS = MUTATORS + [
     (r"\+\+", "--", "++ -> --"),
 ]
 # Known-equivalent mutants of ac_step.c: (description, stripped source line) -> why no input can tell them apart.
-STEP_EQUIVALENT = {}
+_BITS8 = ("c->present, g->key_present and c->key_present are uint8_t: they promote to int, so shifting them right by "
+          "8 yields 0 (defined behaviour, 8 < 32) and bit 0 of that is 0")
+STEP_EQUIVALENT = {
+    (">= -> >", "if (slot >= 8 || !((c->present >> slot) & 1u) || c->kinds[slot] != 1) return reject(out, AC_E_BADMSG);"):
+        "slot == 8 is the only input the mutant treats differently; then (present >> 8) & 1 == 0 (" + _BITS8 + "), so "
+        "the second operand is true and the same AC_E_BADMSG is returned. For slot > 8 both versions return at the first operand.",
+    ("< -> <=", "for (unsigned i = 0; i < AC_MAX_CLASSES; i++) {"):
+        "the extra iteration is i == 16 == AC_MAX_CLASSES. Line 84, executed earlier for the same tier, has already returned "
+        "AC_E_ADMIT unless nfc <= 16 and nfl <= 16, so both guards `i < b->nfc` and `i < b->nfl` are false at i == 16 and the "
+        "array reads fc[16] and fl[16] (out of range) are never evaluated.",
+    ("< -> <=", "for (unsigned i = 0; i < 8; i++) if ((g->key_present >> i) & 1u) c->key[i] = g->key[i];"):
+        "the extra iteration is i == 8: (key_present >> 8) & 1 == 0 (" + _BITS8 + "), so the copy is skipped and g->key[8] is not read.",
+    ("< -> <=", "for (unsigned i = 0; i < 8; i++) for (unsigned j = i + 1; j < 8; j++)"):
+        "covers both `<` in the line. (a) i <= 8: at i == 8 the inner loop starts at j == 9 and 9 < 8 is false, so the body never "
+        "runs. (b) j <= 8: at j == 8 the second operand (key_present >> 8) & 1 is 0 (" + _BITS8 + ") and && short-circuits "
+        "before ac_hash_eq, so key[8] is not read and the condition is false exactly as before.",
+    ("< -> <=", "uint16_t bundle_bit = m->bundle < 16 ? (uint16_t)(1u << m->bundle) : 0;   /* bundle is only meaningful (and range-checked) for bundle actions */"):
+        "the only input the mutant treats differently is bundle == 16, where it computes (uint16_t)(1u << 16) = (uint16_t)65536 = 0, "
+        "the same value as the else branch (0).",
+    ("< -> <=", "for (unsigned j = 0; j < 8; j++)"):
+        "the extra iteration is j == 8: the condition `j != slot && ((c->key_present >> j) & 1u) && ...` has (key_present >> 8) & 1 == 0 "
+        "(" + _BITS8 + "), so it is false and ac_hash_eq / key[8] are never evaluated. slot < 8 here (checked before), so j != slot is true.",
+}
 
 def make_step_scratch():
     d = tempfile.mkdtemp(prefix="mutstep_")
@@ -157,7 +187,7 @@ def main_step(limit=None):
     if survivors: sys.exit(1)
 
 def main(limit=None):
-    source = open(TARGET).read()
+    source = open(TARGET).read() + PROV_SEP + open(TARGET_PROV).read()
     sites = find_mutations(source)
     if limit:
         sites = sites[:limit]

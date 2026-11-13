@@ -1,21 +1,60 @@
 name: gate-08-tla
 # GATE-08: run the TLA+ base model (simulations/tla/FirstStage.tla, cfg_base) to actual completion.
-# Locally this was tried twice and killed both times (14m43s / 249M states generated, 40M distinct,
-# queue still falling but not empty) -- not because of a bug, but because a laptop with 8GB RAM and
-# a few minutes of patience is the wrong tool for an exhaustive state-space search. A GitHub-hosted
-# runner has more RAM, more disk, and can be given real wall-clock time without costing anyone's
-# laptop a thing, so this workflow is where GATE-08 gets a genuine chance to finish.
+# Locally the base run was killed at 14m43s (249M states generated, 40M distinct, queue still
+# falling), so it has never completed. A GitHub-hosted runner (about 7 GB RAM, 2 cores, 6 h job
+# limit) is the place to give it a real budget.
 #
-# Manual trigger only (workflow_dispatch): this can run for hours and generate gigabytes of on-disk
-# BFS state, which has no business running on every push. Download tla2tools.jar fresh each run
-# rather than vendoring a ~2MB binary into the repo.
+# Manual trigger only: this can run for hours and write gigabytes of on-disk state.
+#
+# Modes
+#   exhaustive  breadth-first model check of the chosen config. Only a run that ends with
+#               "Model checking completed. No error has been found." and tlc_exit=0 counts as
+#               a pass; a run stopped by the time cap is "not completed", never a pass.
+#   simulate    random traces (TLC -simulate). SAMPLED evidence only, not a proof; it cannot
+#               pass GATE-08. Use it to hunt for counterexamples or to check that a mutation
+#               config is caught.
+#
+# Checkpointing: TLC writes a checkpoint to the metadir every 45 minutes (exhaustive mode). If the
+# job hits its time cap the checkpoint metadata is uploaded; resuming needs a local copy of the
+# checkpoint directory and `-recover <dir>` (see TLC documentation). No result is claimed from a
+# resumed run until it prints its own completion line.
 on:
   workflow_dispatch:
     inputs:
       config:
-        description: "TLC config to run (cfg_<name>.cfg in simulations/tla/)"
-        required: false
-        default: "base"
+        description: "Config (cfg_<name>.cfg in simulations/tla/)"
+        type: choice
+        default: base
+        options:
+          - base
+          - small2
+          - reduced
+          - m4b_nocap2
+          - m6b_nopam2
+          - w_reach2
+      mode:
+        description: "exhaustive = full model check; simulate = sampled random traces (not a proof)"
+        type: choice
+        default: exhaustive
+        options:
+          - exhaustive
+          - simulate
+      sim_traces:
+        description: "simulate mode: number of random traces"
+        type: string
+        default: "200000"
+      sim_depth:
+        description: "simulate mode: maximum trace depth"
+        type: string
+        default: "200"
+      sim_seed:
+        description: "simulate mode: random seed"
+        type: string
+        default: "1"
+      upload_checkpoint:
+        description: "Also upload the TLC checkpoint directory (can be large)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -23,7 +62,12 @@ permissions:
 jobs:
   tlc:
     runs-on: ubuntu-latest
-    timeout-minutes: 350   # GitHub's hosted-runner job cap is 360 minutes on the free tier
+    timeout-minutes: 355
+    env:
+      CFG: ${{ inputs.config }}
+      MODE: ${{ inputs.mode }}
+      TLA_JAR: ${{ github.workspace }}/tla2tools.jar
+      META: ${{ runner.temp }}/tlc-meta
     steps:
       - uses: actions/checkout@v4
 
@@ -33,30 +77,103 @@ jobs:
           java-version: "21"
 
       - name: Fetch TLA+ tools
-        run: curl -sSL -o /tmp/tla2tools.jar
-          "https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar"
+        run: |
+          curl -sSL --fail -o "$TLA_JAR" \
+            "https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar"
+          java -cp "$TLA_JAR" tlc2.TLC 2>&1 | grep -m1 "TLC2 Version" || true
+          free -m; nproc
 
-      - name: Run TLC (bounded by the job timeout, not by a laptop's patience)
+      - name: Run TLC (capped at 340 min so the later steps still run)
         working-directory: simulations/tla
         env:
-          TLA_JAR: /tmp/tla2tools.jar
-        run: bash run.sh "${{ github.event.inputs.config }}"
+          SIM_TRACES: ${{ inputs.sim_traces }}
+          SIM_DEPTH: ${{ inputs.sim_depth }}
+          SIM_SEED: ${{ inputs.sim_seed }}
+        run: |
+          # heap 4g leaves room for the OS and TLC's off-heap/disk queue on a 7 GB runner
+          export TLC_HEAP=4g
+          export TLC_META="$META"
+          if [ "$MODE" = "simulate" ]; then
+            export TLC_WORKERS=2
+            export TLC_EXTRA="-simulate num=${SIM_TRACES} -depth ${SIM_DEPTH} -seed ${SIM_SEED}"
+          else
+            export TLC_WORKERS=auto
+            export TLC_EXTRA="-checkpoint 45 -fpmem 0.4"
+          fi
+          bash run.sh "$CFG" 20400
 
-      - name: Show result
+      - name: Job summary
         if: always()
         working-directory: simulations/tla
         run: |
-          grep -v JAVA_TOOL "out_${{ github.event.inputs.config }}.txt" | \
-            grep -E "^Error: (Inv|Temporal|Action|Deadlock)|violated|No error|states generated|Finished in" | tail -20
-          echo "---"
-          cat "time_${{ github.event.inputs.config }}.txt" 2>/dev/null || true
+          OUT="out_${CFG}.txt"
+          {
+            echo "## GATE-08 TLC run: config \`${CFG}\`, mode \`${MODE}\`"
+            echo
+            if [ "$MODE" = "simulate" ]; then
+              echo "**SAMPLED evidence (random traces). Not exhaustive, not a proof, does not pass GATE-08.**"
+              echo "Requested: traces=${{ inputs.sim_traces }}, depth=${{ inputs.sim_depth }}, seed=${{ inputs.sim_seed }}"
+            elif grep -q "Model checking completed. No error has been found" "$OUT" 2>/dev/null; then
+              echo "**Exhaustive run COMPLETED with no error.**"
+            elif grep -qE "^Error: |violated" "$OUT" 2>/dev/null; then
+              echo "**Exhaustive run found a violation. See the output below.**"
+            else
+              echo "**Exhaustive run did NOT complete (time cap, memory, or crash). Not a pass.**"
+            fi
+            echo
+            echo '```'
+            grep -v JAVA_TOOL "$OUT" | grep -E "^Error: |violated|No error|states generated|distinct states|depth of the complete|^Finished in|^tlc_exit|^Progress" | tail -12 || true
+            echo '```'
+            echo
+            echo "Timing:"
+            echo '```'
+            cat "time_${CFG}.txt" 2>/dev/null || true
+            echo '```'
+            echo
+            echo "Metadir (checkpoint metadata) size: $(du -sh "$META" 2>/dev/null | cut -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          # fail the job unless TLC exited 0 (no error and finished)
+          grep -q "^tlc_exit=0$" "$OUT"
 
-      - name: Upload raw output (state dir excluded -- can be multi-GB, see .gitignore)
+      - name: Collect checkpoint metadata
+        if: always()
+        run: |
+          mkdir -p ckpt-meta
+          if [ -d "$META" ]; then
+            ls -lR "$META" > ckpt-meta/listing.txt 2>&1 || true
+            du -sh "$META" > ckpt-meta/size.txt 2>&1 || true
+            # small bookkeeping files only (checkpoint manifests, not the state/queue/fingerprint data)
+            find "$META" -type f -size -1M \( -name '*.tlc' -o -name 'MC.*' -o -name '*.txt' \) \
+              -exec cp --parents {} ckpt-meta/ \; 2>/dev/null || true
+          fi
+          if [ "${{ inputs.upload_checkpoint }}" = "true" ] && [ -d "$META" ]; then
+            mkdir -p ckpt-full && cp -r "$META"/. ckpt-full/ 2>/dev/null || true
+          fi
+
+      - name: Upload TLC output and timing
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tla-gate08-${{ github.event.inputs.config }}-${{ github.run_id }}
+          name: tla-gate08-${{ inputs.config }}-${{ inputs.mode }}-${{ github.run_id }}
           path: |
-            simulations/tla/out_${{ github.event.inputs.config }}.txt
-            simulations/tla/time_${{ github.event.inputs.config }}.txt
-          retention-days: 14
+            simulations/tla/out_${{ inputs.config }}.txt
+            simulations/tla/time_${{ inputs.config }}.txt
+          retention-days: 30
+
+      - name: Upload checkpoint metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tla-gate08-checkpoint-meta-${{ inputs.config }}-${{ github.run_id }}
+          path: ckpt-meta
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload full checkpoint (only if requested)
+        if: always() && inputs.upload_checkpoint
+        uses: actions/upload-artifact@v4
+        with:
+          name: tla-gate08-checkpoint-${{ inputs.config }}-${{ github.run_id }}
+          path: ckpt-full
+          if-no-files-found: ignore
+          retention-days: 7

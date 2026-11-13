@@ -161,3 +161,6 @@ Closes out next-work items 4 and 5, and clears every remaining non-hardware "not
 - Pure `ac_step` kernel (ADR-041, Proposed), independent model, golden vectors, `arch_check.py` R1-R8, ABI lock, `docs/architecture/target-architecture.md`.
 - REQ-WAIST-01..04, CLM-64..68. Mutation score for `ac_step.c` is 81% with 24 survivors, unresolved. Not run: Rust twin, ARM size (GATE-07), GATE-08 base.
 - First CI run (2026-11-13): GATE-07 measured 1,196 B (budget 1,024 B), recorded as failed as worded; step [30] fixed (the kernel test and `kernel_check.py` still iterated actions where the engine now takes a tier).
+- `ac_step.c` mutation testing closed: 122/122 detectable killed, 7 proven equivalent (CLM-68). The model gained the genesis duplicate-key check the C already had.
+- GATE-07: provisioning code split into `src/policy8_prov.c` (behaviour unchanged, mutation 46/46); runtime object 392 B under zig/LLVM, full file 1,242 B LLVM vs 1,196 B gcc. Step [7] now fails above `scripts/emu/size_budget.txt`. Emulated cycle estimates (CLM-71/72). New: health check, CI workflow suite, emulation tooling in `scripts/emu/`.
+- GATE-08: sampled TLC runs on the base model (CLM-73..76); `gate-08-tla.yml` gains config, simulate and checkpoint inputs. Gate still not passed.

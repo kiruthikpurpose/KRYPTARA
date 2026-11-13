@@ -26,4 +26,4 @@ Chain: source evidence → principle → claim → decision → requirement → 
 | R2 red-team | — | ADR-010 | REQ-STALE-01 | record | `models/stale_bound.py` | `stale_bound.py` (5/5) | Passed |
 | Rev 4 §9 | CLM-07, 12 | ADR-003 | — | admission | `src/policy8.c` | `arm-none-eabi-size`; `tests/bench_policy8.c` (host) | Size measured; host timing measured (CLM-23); silicon time not |
 | SIM-01 | CLM-08, 18 | ADR-004 | REQ-TIER-01 | tiers | `models/brick_mc.py`; `simulations/fleet_uncertainty.py` | MC run; hazard sweep (CLM-24) | Illustrative, but ordering robust to hazard-sweep/parameter uncertainty |
-| ADR-041 | CLM-64..68 | ADR-041 | REQ-WAIST-01..04 | waist | `src/ac_step.c`, `src/ac_waist.h`, `src/kernel.c` | `arch_check.py`; `step_check.py`; `step_test.c`; mutation `--step` | Host checks pass; mutation 81% (24 survivors); Rust twin, ARM size not run |
+| ADR-041 | CLM-64..68 | ADR-041 | REQ-WAIST-01..04 | waist | `src/ac_step.c`, `src/ac_waist.h`, `src/kernel.c` | `arch_check.py`; `step_check.py`; `step_test.c`; mutation `--step` | Host checks pass; mutation 122/122 detectable killed, 7 proven equivalent; Rust twin, ARM size not run |

@@ -126,9 +126,9 @@ flowchart LR
 
 | Check | What it gives |
 |---|---|
-| `scripts/run_all_checks.sh` | 37 steps covering theory, C vs reference, fuzzing, protocols, PQC conformance, waist and architecture rules |
+| `scripts/run_all_checks.sh` | 38 steps covering theory, C vs reference, fuzzing, protocols, PQC conformance, waist and architecture rules |
 | `scripts/arch_check.py` | Rules R1–R8 (pure and closed kernel, strict build, no mutable globals, no recursion, stack bound, ABI lock) with a self-test that plants six violations |
-| `scripts/mutation_test.py` | `policy8.c`: 46 of 46 detectable mutants killed. `ac_step.c`: 105 of 129 (81%), survivors open |
+| `scripts/mutation_test.py` | `policy8.c`: 46 of 46 detectable mutants killed. `ac_step.c`: 122 of 122 detectable (100%), 7 proven equivalent |
 | `scripts/audit_docs.py` | Document audit: links, IDs, duplicate claims |
 
 ## Honest status
@@ -139,9 +139,9 @@ Every claim carries a class (Established · Derived · Proposed · Hypothesis ·
 |---|---|
 | Theory, C vs Python, projection, fail-closed API, fuzzing | Passing in this repository |
 | Waist `ac_step` (C vs model, golden vectors, fitness rules) | Passing on the host |
-| GATE-07 · admission size ≤ 1,024 B on Cortex-M0+ | **Fails as worded**: 1,196 B measured in CI |
-| GATE-08 · TLA+ base model | Not passed (reduced models pass) |
-| GATE-09/10 · silicon timing and torn writes | Not run, no silicon. A literature survey already fails GATE-10 as worded |
+| GATE-07 · admission size ≤ 1,024 B on Cortex-M0+ | **Fails as worded** (full file 1,196 B in CI). After splitting provisioning code the runtime object measures 392 B under a different compiler (zig/LLVM); the arm-none-eabi-gcc verdict awaits the next CI run |
+| GATE-08 · TLA+ base model | Not passed. Reduced models pass; 60,000 sampled traces on the base model found no violation (not exhaustive) |
+| GATE-09/10 · silicon timing and torn writes | Not run, no silicon. Emulated cycle estimates exist (not silicon). A literature survey already fails GATE-10 as worded |
 | GATE-11 · hash-family independence review | Not run |
 | Rust twin · independent re-implementation · cryptographer review | Not run |
 
@@ -155,7 +155,7 @@ Requires `gcc` and `python3`. `arm-none-eabi-gcc` is optional (the size gate run
 git clone https://github.com/kiruthikpurpose/KRYPTARA.git && cd KRYPTARA
 pip install -r requirements.txt            # requirements-dev.txt adds z3, cbor2 and PQC libraries
 make help                                  # list targets
-make check                                 # all 37 checks
+make check                                 # all 38 checks
 make step                                  # waist: C vs model vs golden vectors
 make arch                                  # architecture fitness rules and self-test
 make audit                                 # documentation audit
@@ -204,6 +204,6 @@ Open decisions for the maintainer: the GATE-07 size budget, the lost-escrow-key 
 
 ## Licence
 
-Copyright 2026 Kiruthik M R. Licensed under the [Apache License, Version 2.0](LICENSE). Third-party material under `research-archive/` and `src/legacy/` keeps its original terms ([NOTICE](NOTICE)).
+Copyright 2026 Kiruthik. Licensed under the [Apache License, Version 2.0](LICENSE). Third-party material under `research-archive/` and `src/legacy/` keeps its original terms ([NOTICE](NOTICE)).
 
 Created and maintained by **Kiruthik M R** ([@kiruthikpurpose](https://github.com/kiruthikpurpose)).

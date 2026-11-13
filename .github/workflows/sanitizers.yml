@@ -1,0 +1,42 @@
+name: sanitizers
+# ASan + UBSan builds of the C test programs with gcc and clang. Any sanitizer report aborts the run.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sanitizers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  asan-ubsan:
+    name: ${{ matrix.cc }} ASan+UBSan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run tests under ASan+UBSan
+        env:
+          CC: ${{ matrix.cc }}
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          ASAN_OPTIONS: detect_leaks=1:abort_on_error=0
+        run: |
+          $CC --version | head -1
+          mkdir -p build/san
+          FLAGS="-std=gnu99 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+          for t in fuzz_policy8 step_test kernel_test test_projection; do
+            echo "::group::build $t"
+            $CC $FLAGS -o build/san/$t tests/$t.c
+            echo "::endgroup::"
+          done
+          build/san/fuzz_policy8
+          build/san/step_test self
+          build/san/kernel_test self
+          build/san/test_projection

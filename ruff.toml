@@ -1,0 +1,16 @@
+# Ruff configuration for models/, scripts/, simulations/, tests/ (Python).
+# Goal: fail on real bugs (syntax errors, undefined names, bad comparisons, redefinitions) and
+# not on style. Tuned on 2026-11-13 against pyflakes 3.2 output (ruff itself was not run locally).
+target-version = "py310"
+line-length = 120
+extend-exclude = ["research-archive", "build", "src/prototypes/rust"]
+
+[lint]
+# E9: syntax/IO errors. F: pyflakes. B-rules and others deliberately not enabled yet.
+select = ["E9", "F"]
+ignore = [
+  "F401",  # unused import: 14 existing in models/, harmless; revisit with a cleanup pass
+  "F841",  # unused local variable: existing in models/, harmless
+  "F403",  # star import: models/step_check.py does `from step_model import *` by design
+  "F405",  # names possibly from star import: consequence of the above
+]
