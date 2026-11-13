@@ -59,7 +59,7 @@ def run(name, schedule):
         print(f"  {year} {what:40s} {status}")
         if not all(ok(r) for r in res.values()): below.append(year)
         if len({f for f in fams.values() if f}) == 2:
-            print(f"       note: three families coexist; recovery is not live if H1 and a second-slot family are both lost")
+            print("       note: three families coexist; recovery is not live if H1 and a second-slot family are both lost")
     last_ecc = max((y for y, _, f in schedule if "ECC" in f.values()), default=None)
     return below, last_ecc
 

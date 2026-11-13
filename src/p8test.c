@@ -7,10 +7,10 @@ int main(void) {
     unsigned ncase;
     if (scanf("%u", &ncase) != 1) return 1;
     for (unsigned c = 0; c < ncase; c++) {
-        unsigned nf, nl, kc, kl, expo, absent; uint8_t f[24], l[24];
-        scanf("%u %u %u %u %x %x", &nf, &nl, &kc, &kl, &expo, &absent);
-        for (unsigned i = 0; i < nf; i++) { unsigned x; scanf("%x", &x); f[i] = (uint8_t)x; }
-        for (unsigned i = 0; i < nl; i++) { unsigned x; scanf("%x", &x); l[i] = (uint8_t)x; }
+        unsigned nf, nl, kc, kl, expo, absent; uint8_t f[24] = {0}, l[24] = {0};
+        if (scanf("%u %u %u %u %x %x", &nf, &nl, &kc, &kl, &expo, &absent) != 6 || nf > 24 || nl > 24) return 1;
+        for (unsigned i = 0; i < nf; i++) { unsigned x; if (scanf("%x", &x) != 1) return 1; f[i] = (uint8_t)x; }
+        for (unsigned i = 0; i < nl; i++) { unsigned x; if (scanf("%x", &x) != 1) return 1; l[i] = (uint8_t)x; }
         ac_tbl_t t, U, L; rd(&t);
         int ru = ac_tbl_upper(&U, f, nf, kc, (uint8_t)expo, 0);
         int rl = ac_tbl_lower(&L, l, nl, kl, (uint8_t)absent, 0);

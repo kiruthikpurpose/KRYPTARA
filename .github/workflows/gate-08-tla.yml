@@ -67,7 +67,7 @@ jobs:
       CFG: ${{ inputs.config }}
       MODE: ${{ inputs.mode }}
       TLA_JAR: ${{ github.workspace }}/tla2tools.jar
-      META: ${{ runner.temp }}/tlc-meta
+      META: /tmp/tlc-meta
     steps:
       - uses: actions/checkout@v4
 
