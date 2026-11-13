@@ -4,7 +4,7 @@
 |---|---|
 | Identity | vision-and-scope, project-principles, executive-summary, document-hierarchy |
 | Theory | theory/foundational-proposition, theory/mathematical-foundations, theory/hypotheses-and-falsifiability, theory/red-team-r2-findings, theory/limitations-and-open-problems, theory/threat-and-fault-model, theory/proofs |
-| Architecture | architecture/primitives-and-waist, system-architecture, mechanisms, lifecycle, architecture/gateway-pattern, architecture/brownfield-containment-guide |
+| Architecture | architecture/primitives-and-waist, system-architecture, mechanisms, lifecycle, architecture/gateway-pattern, architecture/target-architecture, architecture/brownfield-containment-guide |
 | Specifications | specifications/requirements, interfaces-and-data-models, resource-estimates, traceability-matrix |
 | Research | research/source-inventory, evidence-register, problem-mapping, comparison-and-reuse, reproducibility-and-sources, open-questions, legacy-requirements-reconciliation, mcu-survey, hash-family-independence, standards-mapping |
 | Simulation | simulation/simulation-specifications |

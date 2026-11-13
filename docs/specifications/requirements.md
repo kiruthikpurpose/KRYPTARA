@@ -27,3 +27,8 @@
 | REQ-LINT-01 | A host lint MUST reproduce the on-device bounds for a declared structure. | CLM-06 | tooling | TEST-ADM-01 |
 | REQ-LINT-03 | The lint MUST support a declared site-controller group mode. | F-R2-04 | tooling | [M] `site_controller=` parameter in `structures()`/`lint()` (models/lint.py), demonstrated: OPERATE under `OWN` as site controller is unsafe (interval empty) |
 | REQ-CLAIM-01 | Documentation MUST label every claim with an evidence class and MUST NOT describe unrun work as done. | ADR-013 | docs | scripts/audit_docs.py |
+
+| REQ-WAIST-01 | The kernel core MUST be a pure, closed unit: no I/O, allocation, clock, mutable global state or recursion; external symbols limited to memset, memcpy, memcmp and the hash provider. | ADR-041 | waist | [M] `scripts/arch_check.py` R1-R7 and `--self-test` |
+| REQ-WAIST-02 | `ac_step` MUST fail closed in a fixed check order (a rejected message leaves the context byte-identical) and accept no second transition before `ac_ack`. | ADR-041 | waist | [M] `tests/step_test.c`, `models/step_check.py`; mutation score 81% (CLM-68), 24 survivors open |
+| REQ-WAIST-03 | Waist constants and struct layouts MUST equal the committed lock `src/waist-v1.abi`. | ADR-041 | waist | [M] `scripts/arch_check.py` R8 |
+| REQ-WAIST-04 | Any implementation MUST reproduce `tests/vectors/waist-v1.txt`. | ADR-041 | waist | C: [M]. Rust twin: **not run** |

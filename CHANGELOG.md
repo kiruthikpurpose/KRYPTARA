@@ -156,3 +156,7 @@ Closes out next-work items 4 and 5, and clears every remaining non-hardware "not
   IEEE S&P 2016 DOI. IR 8547's final status and 2030/2035 dates are now confirmed at csrc.nist.gov,
   so the "trade press, re-verify" caveats were removed (CLM-14, CLM-57). Not checked: CNSA 2.0 PDF
   (refuses automated access).
+
+## 2026-11-13: waist v1 and architecture plan
+- Pure `ac_step` kernel (ADR-041, Proposed), independent model, golden vectors, `arch_check.py` R1-R8, ABI lock, `docs/architecture/target-architecture.md`.
+- REQ-WAIST-01..04, CLM-64..68. Mutation score for `ac_step.c` is 81% with 24 survivors, unresolved. Not run: Rust twin, ARM size (GATE-07), GATE-08 base.

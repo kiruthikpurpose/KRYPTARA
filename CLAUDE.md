@@ -15,6 +15,7 @@ Project: KRYPTARA (see README). Verified core = governed-change kernel. Do not r
 - Run everything: `./scripts/run_all_checks.sh`. Docs audit: `python3 scripts/audit_docs.py`.
 
 ## Next work (in order)
+0. Resolve the 24 surviving `ac_step.c` mutants (`python3 scripts/mutation_test.py --step`), CLM-68.
 1. GATE-08: run the TLA+ base configuration to completion (`.github/workflows/gate-08-tla.yml`,
    manual trigger). The reduced configuration passes (GATE-08r); mutations M4 and M6 need the base
    size to be caught.
