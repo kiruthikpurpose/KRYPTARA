@@ -1,5 +1,7 @@
 # Security policy
 
+**Supported:** the `main` branch. There are no releases or deployments.
+
 KRYPTARA is a research repository for a governed-change kernel: admission policy math, a reference
 C implementation, and formal models. It is **pre-Phase-0** on its own roadmap (`docs/implementation/
 roadmap.md`) — there is no shipped firmware, no deployed instance, and no production secret material

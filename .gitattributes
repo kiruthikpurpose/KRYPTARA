@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.abi text eol=lf
+tests/vectors/* text eol=lf linguist-generated=true
+research-archive/** linguist-vendored
+src/legacy/** linguist-vendored

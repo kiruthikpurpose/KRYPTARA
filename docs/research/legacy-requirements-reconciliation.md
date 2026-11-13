@@ -2,7 +2,7 @@
 
 **Machine-generated** by `scripts/reconcile_legacy_requirements.py` -- a mechanical keyword-overlap first pass over all 221 `FR-`/`NFR-` rows in `research-archive/streams/R_requirements.md` against the 23 current `REQ-` rows in `docs/specifications/requirements.md`. This classifies, it does not verify: a LIKELY-COVERED match is a keyword-overlap score, not a confirmed semantic match, and every GAP-CANDIDATE still needs a human decision (new REQ-/ADR, explicit waiver, or recognise it as already out of scope for a reason this script's prefix table doesn't know about). Re-run after any change to either source file.
 
-**Totals:** 221 legacy requirements -- 2 manually verified covered, 11 likely covered (keyword match, unverified), 62 out of scope by area, 146 gap candidates needing triage.
+**Totals:** 221 legacy requirements -- 2 manually verified covered, 12 likely covered (keyword match, unverified), 62 out of scope by area, 145 gap candidates needing triage.
 
 ## Manually verified covered (a person confirmed the match, not just keyword overlap)
 
@@ -20,6 +20,7 @@
 | FR-AUT-06 | MUST | M1 | REQ-LIFE-02 | 3 | The floor-advance rule SHALL require a valid signature from a slot different from the slot being retired, plus satisfaction of FR-AUT-03's c... |
 | FR-AUT-09 | MUST | M2 | REQ-CHAIN-01 | 3 | Every algorithm-class transition SHALL execute as the molting state machine (provision alongside, shadow-sign, hide, shed under disjoint quo... |
 | FR-AUT-11 | SHOULD | M2 | REQ-EVD-02 | 3 | Each authority key SHALL carry a declared scope (action types, device set) and rate limit enforced by the verifier or policy evaluator; scop... |
+| FR-CRY-11 | MUST | M1 | REQ-WAIST-04 | 3 | Every primitive SHALL pass known-answer tests from the published standards' vectors and a differential test against at least one independent... |
 | FR-FS-12 | MUST | M4 | REQ-IMG-01 | 3 | In HA-1 the first stage SHALL evaluate the compiled disjoint-quorum policy (committed by hash in the locked stage) on every ADVANCE_FLOOR, R... |
 | FR-FS-13 | MUST | M2 | REQ-LIFE-02 | 3 | REPLACE_SLOT3(owner) SHALL require the ownership voucher chain plus a signature from slot 1 or slot 2 under the floor rule, and SHALL be una... |
 | FR-FS-15 | SHOULD | M1 | REQ-CHAIN-01 | 3 | The first stage SHALL select the LMS parameter profile by capability: W4 where no hash engine is present, W8 where a hardware SHA engine is ... |
@@ -127,7 +128,6 @@
 | FR-CRY-08 | MUST | M1 | 1 | The API SHALL expose a signature malleability class (EUF-CMA vs SUF-CMA) and SHALL NOT deduplicate or key records by raw signature bytes of EUF-CMA-only composi... |
 | FR-CRY-09 | MUST | M1 | 2 | A hash-engine HAL SHALL select hardware SHA-2/SHA-3 where present, fall back to constant-time software, and produce identical outputs verified by KAT. |
 | FR-CRY-10 | MUST | M1 | 2 | A benchmark harness SHALL reproduce cycles, stack, RAM and flash per primitive and parameter set on named boards, and every published figure SHALL carry its par... |
-| FR-CRY-11 | MUST | M1 | 1 | Every primitive SHALL pass known-answer tests from the published standards' vectors and a differential test against at least one independent implementation. |
 | FR-CRY-12 | MUST | M1 | 1 | Per-primitive RAM/stack/flash budgets SHALL be published per target and enforced as CI regression gates. |
 | FR-CRY-13 | SHOULD | M3 | 1 | Hybrid-strict policy SHALL be a declarable per-peer-set mode with explicit fallback behaviour, a signed expiry epoch for any fallback exception, and reporting o... |
 | FR-CRY-14 | MUST | M2 | 2 | Negotiation SHALL refuse any suite weaker than the policy-declared minimum, and SHALL log attempted downgrades; defaults SHALL NOT silently select a weaker grou... |
@@ -137,10 +137,10 @@
 | FR-CRY-18 | SHOULD | M2 | 1 | Firmware-encryption key wrapping SHALL use a post-quantum KEM (hybrid permitted); classical-only wrapping of firmware keys SHALL be rejected by policy. |
 | FR-CRY-19 | SHOULD | M3 | 1 | Constrained-link profiles SHALL support offline (non-air) key provisioning and fragmentation-aware transports so no large public-key object is required over LoR... |
 | FR-EVD-01 | MUST | M2 | 2 | Devices capable of signing SHALL emit a signed state report carrying floor, active slots and classes, image hash, policy hash, lifecycle state, senescence flag,... |
-| FR-EVD-02 | MUST | M3 | 0 | Every state report SHALL carry a structured, human-readable delta from the previous report. |
+| FR-EVD-02 | MUST | M3 | 1 | Every state report SHALL carry a structured, human-readable delta from the previous report. |
 | FR-EVD-03 | MUST | M3 | 1 | The tooling SHALL generate CycloneDX CBOM from state reports, inventories and surface maps, including per-part hardware evidence. |
 | FR-EVD-04 | SHOULD | M4 | 0 | Reports SHALL map to TCG/IETF RATS attestation formats where the platform provides them, including TPM 2.0 v1.85 ML-KEM/ML-DSA identity where available. |
-| FR-EVD-05 | SHOULD | M4 | 0 | Passive inference parsers SHALL derive crypto state for silent devices from OPC UA, TLS/DTLS, IKE and GDOI observations with a measured accuracy target of at le... |
+| FR-EVD-05 | SHOULD | M4 | 1 | Passive inference parsers SHALL derive crypto state for silent devices from OPC UA, TLS/DTLS, IKE and GDOI observations with a measured accuracy target of at le... |
 | FR-EVD-06 | MUST | M3 | 0 | An OPC UA configuration linter SHALL flag AutoAccept and SecurityMode=None. |
 | FR-EVD-07 | SHOULD | M4 | 2 | Alerts SHALL key on danger signals (authority-changing events, safety-logic signature changes, out-of-window state changes) rather than novelty. |
 | FR-EVD-08 | MUST | M3 | 0 | The tooling SHALL compute exposure-years per the M5 model and report it as the primary programme metric alongside percentage migrated. |
@@ -151,7 +151,7 @@
 | FR-EVD-13 | MUST | M3 | 1 | Monitoring taps SHALL be read-only, SHALL hold no authority keys, and SHALL be enumerated in the surface map. |
 | FR-EVD-14 | MUST | M3 | 2 | Evidence archives SHALL include reference verifiers and format specs, versioned and hash-pinned. |
 | FR-EVD-15 | MUST | M4 | 0 | Conformance claims SHALL be machine-checkable against the public test suite so owners can verify OEM post-quantum claims. |
-| FR-EVD-16 | MAY | M5 | 0 | The tooling MAY export anonymised crypto-state posture for insurer/loss-data use. |
+| FR-EVD-16 | MAY | M5 | 1 | The tooling MAY export anonymised crypto-state posture for insurer/loss-data use. |
 | FR-FS-01 | MUST | M1 | 2 | The first stage SHALL verify the second stage using a hash-based signature scheme: LMS-SHA-256 W4 in the MV-1 profile; SHA-2 and SHA-3 based schemes (LMS-SHA-25... |
 | FR-FS-02 | MUST | M1 | 1 | The first stage SHALL hold at least three 32-byte key-hash slots (96 B), spanning at least two disjoint assumption classes in HA-1, with one slot reserved for t... |
 | FR-FS-03 | MUST | M1 | 2 | The product SHALL enable the part's flash/boot lock over the first stage before shipment; the first stage SHALL expose a lock-status attestation and SHALL conta... |
@@ -212,9 +212,9 @@
 | FR-TIM-07 | MUST | M0 | 1 | A counter-capacity register SHALL list every counter, time field and signature budget with capacity, consumption rate and asset life, and the build SHALL fail i... |
 | FR-TIM-08 | MUST | M2 | 1 | Unauthenticated PTP or other unauthenticated time SHALL NOT feed any security policy decision. |
 | FR-TIM-09 | SHOULD | M5 | 1 | Grid-cycle or ENF-derived inputs, if used, SHALL be plausibility inputs only and SHALL tolerate deviations of at least several minutes and islanding. |
-| FR-TIM-10 | MUST | M2 | 1 | Certificate and credential handling SHALL support 'no well-defined expiry' encodings with issuer duty documented, and SHALL not fail closed on calendar expiry a... |
+| FR-TIM-10 | MUST | M2 | 2 | Certificate and credential handling SHALL support 'no well-defined expiry' encodings with issuer duty documented, and SHALL not fail closed on calendar expiry a... |
 | FR-TIM-11 | MUST | M2 | 1 | Offline revocation SHALL be achieved through floor/counter advancement and signed bundles carried at visits, not through fetched CRLs. |
-| FR-TIM-12 | SHOULD | M3 | 0 | A technician freshness token SHALL provide a signed not-before bound for visits to long-disconnected assets. |
+| FR-TIM-12 | SHOULD | M3 | 1 | A technician freshness token SHALL provide a signed not-before bound for visits to long-disconnected assets. |
 | FR-TIM-13 | MAY | M5 | 1 | The library MAY support SRAM-remanence power-off timers as one labelled zeitgeber input. |
 | NFR-API-01 | MUST | M2 | 1 | Public APIs SHALL follow semantic versioning with a minimum deprecation period; first-stage-facing formats SHALL be frozen once released. |
 | NFR-API-02 | MUST | M2 | 2 | Storage and wire formats SHALL remain readable by later releases for the declared device lifetime. |
@@ -241,6 +241,6 @@
 | NFR-OFF-01 | MUST | M1 | 2 | All device-side verification SHALL operate fully offline with no network or time source. |
 | NFR-OFF-02 | MUST | M2 | 2 | A device offline for 10 years SHALL accept a valid catch-up bundle within a declared bundle-size bound. |
 | NFR-PWR-01 | SHOULD | M3 | 0 | Per-operation energy SHALL be published; C1 battery devices SHALL perform no public-key operations except enrolment. |
-| NFR-PWR-02 | MUST | M1 | 0 | Power loss at any instruction SHALL be tolerated (SP-03) with at least 100,000 randomised cut tests per release. |
+| NFR-PWR-02 | MUST | M1 | 1 | Power loss at any instruction SHALL be tolerated (SP-03) with at least 100,000 randomised cut tests per release. |
 | NFR-SAFE-01 | MUST | M2 | 1 | A security fault SHALL never inhibit a safety function; every safe-misfire path SHALL fail operational. |
 | NFR-SEC-01 | MUST | M1 | 1 | Device-side parsers SHALL reject malformed input without state change and with bounded resource use. |

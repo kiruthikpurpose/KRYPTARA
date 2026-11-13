@@ -160,3 +160,4 @@ Closes out next-work items 4 and 5, and clears every remaining non-hardware "not
 ## 2026-11-13: waist v1 and architecture plan
 - Pure `ac_step` kernel (ADR-041, Proposed), independent model, golden vectors, `arch_check.py` R1-R8, ABI lock, `docs/architecture/target-architecture.md`.
 - REQ-WAIST-01..04, CLM-64..68. Mutation score for `ac_step.c` is 81% with 24 survivors, unresolved. Not run: Rust twin, ARM size (GATE-07), GATE-08 base.
+- First CI run (2026-11-13): GATE-07 measured 1,196 B (budget 1,024 B), recorded as failed as worded; step [30] fixed (the kernel test and `kernel_check.py` still iterated actions where the engine now takes a tier).

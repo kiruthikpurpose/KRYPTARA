@@ -1,0 +1,10 @@
+KRYPTARA
+Copyright 2026 Kiruthik M R
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party material is not covered by the licence above and keeps its original terms:
+  - research-archive/  historical working material, kept for provenance only
+  - src/legacy/        legacy code, kept for provenance only
+  - Python packages and tools named in requirements.txt and requirements-dev.txt
+    (installed separately, each under its own licence)

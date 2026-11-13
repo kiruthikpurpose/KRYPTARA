@@ -1,6 +1,6 @@
 /* Tests for src/kernel.c. Modes:
  *   kernel_test self                      built-in checks (image commit, unknown action)
- *   kernel_test tiers  < 4 tables         prints, per action, the 256-bit authorised set, then
+ *   kernel_test tiers  < 4 tables         prints, per tier, the 256-bit authorised set, then
  *                                         the result of the single-bit-flip injection sweep
  *   kernel_test chain  < "dom prev pay"   prints one chain digest per input line (hex fields)
  * The tiers and chain modes are driven by models/kernel_check.py, which compares against the
@@ -27,7 +27,7 @@ static int self(void) {
     bad += ac_image_bootable(a, b, 0) != 0;          /* no ACTIVATE_IMAGE recorded at all: refused */
     ac_tbl_t t[AC_TIER_N]; for (int i = 0; i < AC_TIER_N; i++) memset(&t[i], 0xff, sizeof t[i]);
     ac_engine_t e; ac_engine_load(&e, t);
-    bad += ac_engine_authorise(&e, AC_ACT_N, 0xff) != 0;     /* unknown action: refused */
+    bad += ac_engine_authorise(&e, AC_TIER_N, 0xff) != 0;     /* unknown tier: refused */
     bad += ac_engine_authorise(&e, 1000, 0xff) != 0;
     uint8_t out[32], big[300] = {0};
     bad += ac_chain_hash(out, big, 256, a, big, 0) != -1;    /* over-long domain tag: refused */
@@ -40,7 +40,7 @@ static int tiers(void) {
     for (int i = 0; i < AC_TIER_N; i++)
         for (int w = 7; w >= 0; w--) { unsigned x; if (scanf("%8x", &x) != 1) return 2; t[i].w[w] = x; }
     ac_engine_t e; ac_engine_load(&e, t);
-    for (unsigned a = 0; a < AC_ACT_N; a++) {
+    for (unsigned a = 0; a < AC_TIER_N; a++) {
         ac_tbl_t r; memset(&r, 0, sizeof r);
         for (unsigned S = 0; S < 256; S++) if (ac_engine_authorise(&e, a, (uint8_t)S)) ts(&r, S);
         for (int w = 7; w >= 0; w--) printf("%08x", r.w[w]);
@@ -56,7 +56,7 @@ static int tiers(void) {
                 victim->w[bit >> 5] ^= 1u << (bit & 31);
                 flips++;
                 if (ac_tbl_dual_consistent(&f.tier[tier])) undetected++;
-                for (unsigned a = 0; a < AC_ACT_N; a++)
+                for (unsigned a = 0; a < AC_TIER_N; a++)
                     for (unsigned S = 0; S < 256; S++)
                         if (ac_engine_authorise(&f, a, (uint8_t)S) && !ac_engine_authorise(&e, a, (uint8_t)S)) widened++;
             }

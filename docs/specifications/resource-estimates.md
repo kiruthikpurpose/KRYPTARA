@@ -8,7 +8,7 @@
 | Item | Value | Label |
 |---|---|---|
 | Core (SHA-256, SHAKE256, LMS verify, journal), Cortex-M0+, gcc -Os | 3,962 B (clang 4,717 B) | [M, compiled; binaries not executed on silicon] |
-| Interval admission incl. on-device bounds (`policy8.c`) | 682 B (Rev 4; 902 B hardened as of the R2 fixes — **stale as of 2026-11-09**, see CLM-07) M0+, 680 B M33; stack ≈ 88 B | [M] |
+| Interval admission incl. on-device bounds (`policy8.c`) | 682 B (Rev 4; 902 B hardened as of the R2 fixes — **stale**: measured 1,196 B in CI on 2026-11-13, see GATE-07, CLM-07) M0+, 680 B M33; stack ≈ 88 B | [M] |
 | Earlier 6-slot validator (Rev 3) | 176 B | [M] superseded |
 | Witnessed-receipt verifier (inclusion proof + cosignature loop) | ≈ 0.6–1.0 KiB | [E] |
 | Presence sampling + glue | ≈ 0.2 KiB | [E] |

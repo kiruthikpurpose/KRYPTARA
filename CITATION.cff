@@ -1,9 +1,7 @@
 cff-version: 1.2.0
 message: >-
-  If you use or reference this work, please cite it as below. No licence has
-  been selected yet for this repository (see LICENSE) -- this file identifies
-  the work for citation purposes and does not grant any usage rights beyond
-  whatever LICENSE currently states.
+  If you use or reference this work, please cite it as below.
+license: Apache-2.0
 title: KRYPTARA
 abstract: >-
   A research and implementation repository for a governed-change kernel for
@@ -13,8 +11,9 @@ abstract: >-
   the project title is Speculative and unsupported by evidence (see
   docs/vision-and-scope.md).
 authors:
-  - name: kiruthikpurpose
-    email: kiruthikpurpose@gmail.com
+  - family-names: "M R"
+    given-names: Kiruthik
+    alias: kiruthikpurpose
 repository-code: "https://github.com/kiruthikpurpose/KRYPTARA"
 date-released: "2026-11-09"
 keywords:
