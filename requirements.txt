@@ -1,3 +1,3 @@
 # Only simulations/fleet_uncertainty.py needs numpy; every other script (models/, tests/redteam_r2/)
 # is deliberately stdlib-only so the reference math has no dependency surface.
-numpy>=1.26
+numpy>=2.5.4
