@@ -152,7 +152,7 @@ jobs:
 
       - name: Upload TLC output and timing
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tla-gate08-${{ inputs.config }}-${{ inputs.mode }}-${{ github.run_id }}
           path: |
@@ -162,7 +162,7 @@ jobs:
 
       - name: Upload checkpoint metadata
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tla-gate08-checkpoint-meta-${{ inputs.config }}-${{ github.run_id }}
           path: ckpt-meta
@@ -171,7 +171,7 @@ jobs:
 
       - name: Upload full checkpoint (only if requested)
         if: always() && inputs.upload_checkpoint
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tla-gate08-checkpoint-${{ inputs.config }}-${{ github.run_id }}
           path: ckpt-full
