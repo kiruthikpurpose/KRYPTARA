@@ -1,4 +1,4 @@
-.PHONY: size-emu cycles-emu help check audit health arch step mutation-step slow bench quick clean
+.PHONY: diagrams size-emu cycles-emu help check audit health arch step mutation-step slow bench quick clean
 
 help:  ## list targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
@@ -52,3 +52,6 @@ size-emu:  ## per-function Thumb-1 size via zig cc (LLVM, not gcc, not silicon);
 
 cycles-emu:  ## Cortex-M0+ cycle ESTIMATE of admission functions in Unicorn (not silicon); needs ziglang unicorn pyelftools capstone
 	$(EMU_PY) scripts/emu/cycles.py
+
+diagrams:  ## regenerate the README diagrams (docs/assets/*.svg)
+	python3 scripts/make_diagrams.py

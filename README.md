@@ -1,8 +1,6 @@
 <div align="center">
 
-# KRYPTARA
-
-**A governed-change kernel for devices and artefacts that outlive their makers, their custodians and their cryptography.**
+<img src="docs/assets/hero.svg" alt="KRYPTARA: a governed-change kernel for devices and artefacts that outlive their makers, their custodians and their cryptography" width="100%">
 
 [![checks](https://github.com/kiruthikpurpose/KRYPTARA/actions/workflows/ci.yml/badge.svg)](https://github.com/kiruthikpurpose/KRYPTARA/actions/workflows/ci.yml)
 [![licence](https://img.shields.io/badge/licence-Apache--2.0-blue.svg)](LICENSE)
@@ -37,33 +35,7 @@ Post-quantum migration is one application of this kernel (retiring a broken assu
 
 The kernel is an hourglass: many providers and ports below, many tools above, one small frozen interface (the *waist*) in the middle.
 
-```mermaid
-flowchart TB
-    subgraph L4["L4 · Fleet tools (host)"]
-        lint["Policy lint<br/>models/lint.py"]
-        ceremony["Ceremony tool<br/>scripts/ac_ceremony.py"]
-        sim["Governance simulators<br/>simulations/"]
-    end
-    subgraph L2["L2 · Formats (host)"]
-        cbor["CBOR bundle projection"]
-        merkle["Merkle inclusion proofs"]
-    end
-    subgraph L0["L0 · Locked kernel (C99)"]
-        direction TB
-        waist{{"WAIST · ac_step(ctx, msg) → status + intents<br/>src/ac_step.c · src/ac_waist.h"}}
-        adm["Admission<br/>src/policy8.c"]
-        eng["Tier engine · chain hash · image check<br/>src/kernel.c"]
-        waist --- adm
-        waist --- eng
-    end
-    subgraph L1["L1 · Providers and ports (not built yet)"]
-        ev["W2 evidence verification<br/>LMS · SHA-256 prototypes exist"]
-        pf["W3 platform · NV journal"]
-    end
-    L4 --> L2 --> waist
-    ev -- "pre-verified evidence" --> waist
-    waist -- "intents: NV_WRITE_SNAPSHOT · BOOT_IMAGE · REJECT" --> pf
-```
+<img src="docs/assets/architecture.svg" alt="Architecture: tools above, providers below, the pure ac_step waist in the middle" width="100%">
 
 The waist is a **pure function over an explicit context**: no I/O, allocation, clock, global state or recursion. That makes it portable, testable exhaustively, and a closed target for a Rust twin, formal proofs and independent re-implementations. Details: [ADR-041](docs/decisions/ADR-041-the-waist-is-a-pure-step-over-an-explicit-context.md), [target architecture](docs/architecture/target-architecture.md).
 
@@ -73,33 +45,15 @@ The waist is a **pure function over an explicit context**: no I/O, allocation, c
 
 Every message passes the same gate, in the same order. Nothing is modified before the final apply step, so a rejection leaves the context byte-identical.
 
-```mermaid
-flowchart LR
-    m([message]) --> a{initialised?}
-    a -- no --> r1[/REJECT/]
-    a -- yes --> b{idle? no pending ack}
-    b -- no --> r2[/BUSY/]
-    b -- yes --> c{fields valid?}
-    c -- no --> r3[/REJECT/]
-    c -- yes --> d{evidence authorises<br/>action at its tier?}
-    d -- no --> r4[/REJECT/]
-    d -- yes --> e{state · budget ·<br/>admission interval OK?}
-    e -- no --> r5[/REJECT/]
-    e -- yes --> f[apply] --> g([NV_WRITE_SNAPSHOT])
-    g --> h([ac_ack])
-```
+<img src="docs/assets/step-flow.svg" alt="The fixed check order inside ac_step" width="100%">
 
 ### Who can authorise what
 
-```mermaid
-flowchart LR
-    T0["T0 HALT<br/>any key or presence"] --> T1["T1 OPERATE<br/>1-safe · live after 1 loss"]
-    T1 --> T2a["T2 CONST<br/>2-safe, key-set changes"]
-    T1 --> T2b["T2 RECOVERY<br/>survives 2 losses"]
-    T2a -. "re-keying lives in exactly one T2 tier<br/>(REQ-TIER-02)" .- T2b
-```
+<img src="docs/assets/tiers.svg" alt="Tiers: HALT, OPERATE, CONST and RECOVERY" width="100%">
 
 ### The three results behind the design
+
+<img src="docs/assets/interval.svg" alt="Interval theorem: safe and live policies lie between Lo and U" width="100%">
 
 1. **Interval theorem.** For a declared fault structure, the policies that are both safe and live are exactly the monotone tables between a computable lower bound `Lo` and upper bound `U`.
 2. **Class-count law.** With `k` independent evidence classes, tolerating `t` compromised and `s` lost classes is possible if and only if `k ≥ t + s + 1`.
@@ -111,18 +65,7 @@ Proofs and their machine checks: [`docs/theory/mathematical-foundations.md`](doc
 
 Every behaviour has four artefacts that must agree: prose, an independent model, the C code and golden vectors.
 
-```mermaid
-flowchart LR
-    spec["Requirements and ADRs<br/>docs/"] --> model["Independent Python model<br/>models/"]
-    spec --> c["C implementation<br/>src/"]
-    model <-- "differential: 15,000+ random lines" --> c
-    c --> vec[("Golden vectors<br/>tests/vectors/")]
-    c --> fit["Fitness rules R1–R8 · ABI lock<br/>scripts/arch_check.py"]
-    c --> mut["Mutation testing<br/>scripts/mutation_test.py"]
-    c --> fz["Fuzzing · ASan · UBSan"]
-    spec --> tla["TLA+ model checking<br/>simulations/tla/"]
-    spec --> z3["Z3 instance proofs · exhaustive n ≤ 4"]
-```
+<img src="docs/assets/verification.svg" alt="Four artefacts per behaviour and the checks around them" width="100%">
 
 | Check | What it gives |
 |---|---|
@@ -187,14 +130,7 @@ research-archive/  Historical material, provenance only
 
 ## Roadmap
 
-```mermaid
-flowchart LR
-    s1["1 · Pure step<br/>DONE (host)"] --> s2["2 · Evidence layer,<br/>labels, class-dead"]
-    s2 --> s3["3 · Catch-up,<br/>receipts, publicity"]
-    s3 --> s4["4 · Platform W3,<br/>journal, boot recovery"]
-    s4 --> s5["5 · Ports, Rust twin,<br/>proofs, external review"]
-    s5 --> t0(["T0 freeze"])
-```
+<img src="docs/assets/roadmap.svg" alt="Roadmap to the T0 freeze" width="100%">
 
 Open decisions for the maintainer: the GATE-07 size budget, the lost-escrow-key conflict ([OQ-14](docs/research/open-questions.md)), and the meaning of "Yielding" in the project name ([OQ-01](docs/research/open-questions.md)).
 

@@ -461,7 +461,7 @@ def git(ctx, *args):
 
 def h12(ctx):
     """No AI/tool attribution trailer in the last 50 commits or in tracked files (outside research-archive/ and source-inventory)."""
-    out = []; exempt = {"docs/research/source-inventory.md", "scripts/health_check.py"}
+    out = []; exempt = {"docs/research/source-inventory.md", "scripts/health_check.py", "scripts/ci/check_commits.py", ".github/workflows/repo-hygiene.yml", "docs/architecture/ci-architecture.md"}  # these implement or document the rule
     log = git(ctx, "log", "-50", "--format=%H%x1f%B%x1e")
     if log:
         for rec in log.split("\x1e"):
